@@ -63,6 +63,7 @@ class PagamentoController:
 
     def quitar_parcela(self, atendimento: Atendimento, numero_parcela: int):
         validar_tipo(atendimento, Atendimento)
+        
         if atendimento.pagamento is None:
             raise RegraNegocioException("Este atendimento não possui pagamentos registrados.")
         
