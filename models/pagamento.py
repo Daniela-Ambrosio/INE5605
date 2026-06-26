@@ -1,7 +1,7 @@
 from datetime import date
 from typing import List
 from abc import ABC
-from .Parcela import Parcela
+from .parcela import Parcela
 
 
 class Pagamento(ABC):

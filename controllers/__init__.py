@@ -1,7 +1,6 @@
-from .ClinicaController import ClinicaController
-from .PessoaController import PessoaController
-from .AtendimentoController import AtendimentoController
-from .PagamentoController import PagamentoController
-from .RelatoriosController import RelatoriosController
-
-        
+from .clinica_controller import ClinicaController
+from .pessoa_controller import PessoaController
+from .atendimento_controller import AtendimentoController
+from .pagamento_controller import PagamentoController
+from .relatorios_controller import RelatoriosController
+from .controlador_sistema import ControladorSistema

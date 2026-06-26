@@ -1,4 +1,4 @@
-from .Pessoa import ProfissionalSaude
+from .pessoa import ProfissionalSaude
 
 class Procedimento:
     def __init__(self, descricao: str, custo: float, profissional: ProfissionalSaude):

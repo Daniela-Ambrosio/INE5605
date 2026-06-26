@@ -1,4 +1,6 @@
-from .Context import RegraNegocioException
+
+class RegraNegocioException(Exception):
+    pass
 
 def validar_obrigatorios(campos: dict):
     for nome_campo, valor in campos.items():

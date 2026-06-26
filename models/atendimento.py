@@ -1,10 +1,10 @@
-from datetime import date, datetime
+from datetime import date, datetime, time
 from enum import Enum
 from typing import List
-from .Clinica import Clinica
-from .Pessoa import Paciente, ProfissionalSaude
-from .Procedimento import Procedimento
-from .Pagamento import Pagamento
+from .clinica import Clinica
+from .pessoa import Paciente, ProfissionalSaude
+from .procedimento import Procedimento
+from .pagamento import Pagamento
 
 class TipoAtendimento(Enum):
     CONSULTA = "Consulta"
@@ -13,8 +13,8 @@ class TipoAtendimento(Enum):
     PROCEDIMENTO = "Procedimento"
 
 class Atendimento:
-    def __init__(self, clinica: Clinica, paciente: Paciente, profissional: ProfissionalSaude, data: date, inicio: datetime,
-            fim: datetime, tipo: TipoAtendimento, custo: float):
+    def __init__(self, clinica: Clinica, paciente: Paciente, profissional: ProfissionalSaude, data: date, inicio: time,
+            fim: time, tipo: TipoAtendimento, custo: float):
             self._clinica = clinica
             self._paciente = paciente
             self._profissional = profissional
@@ -90,7 +90,7 @@ class Atendimento:
     def procedimentos(self):
         return self._procedimentos
  
-    #agregação pode receber o objeto já instanciado
+    #agregação recebe o objeto já instanciado
     def adicionar_procedimento(self, procedimento: Procedimento):
         self._procedimentos.append(procedimento)
         self._custo += procedimento.custo
@@ -106,7 +106,19 @@ class Atendimento:
     @property
     def pagamento(self):
         return self._pagamento
- 
+
+    @pagamento.setter
+    def pagamento(self, pagamento):
+        self._pagamento = pagamento
+
+    @property
+    def parcelado(self):
+        return self._parcelado
+
+    @parcelado.setter
+    def parcelado(self, parcelado: bool):
+        self._parcelado = parcelado
+
     # Agregação
     def registrar_pagamento(self, pagamento: Pagamento):
         self._pagamento = pagamento
