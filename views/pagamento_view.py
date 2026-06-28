@@ -12,7 +12,6 @@ class PagamentoView:
             if values.get("1"): opcao = 1
             if values.get("2"): opcao = 2
             if values.get("3"): opcao = 3
-            if values.get("4"): opcao = 4
             if values.get("0") or button in (None, "Cancelar"): opcao = 0
         self.close()
         return opcao
@@ -25,7 +24,6 @@ class PagamentoView:
             [sg.Radio("Realizar Pagamento de Atendimento", "RD1", key="1")],
             [sg.Radio("Pagar Parcela Pendente", "RD1", key="2")],
             [sg.Radio("Listar Extrato do Atendimento", "RD1", key="3")],
-            [sg.Radio("Estornar Pagamento (Excluir)", "RD1", key="4")],
             [sg.Radio("Retornar", "RD1", key="0")],
             [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
         ]
@@ -35,8 +33,8 @@ class PagamentoView:
         sg.ChangeLookAndFeel("DarkTeal4")
         layout = [
             [sg.Text("-------- DADOS PAGAMENTO ----------", font=("Helvetica", 25))],
-            [sg.Text("Tipo (Dinheiro/PIX/Cartao):", size=(20, 1)), sg.InputText("", key="tipo")],
-            [sg.Text("É parcelado? (S/N):", size=(20, 1)), sg.InputText("", key="parcelado")],
+            [sg.Text("Tipo:", size=(20, 1)), sg.Combo(['Dinheiro', 'PIX', 'Cartão'], readonly=True, key="tipo")],
+            [sg.Text("É parcelado?:", size=(20, 1)), sg.Combo(['Sim', 'Não'], readonly=True, key="parcelado")],
             [sg.Text("--- Só PIX ---", font=("Helvetica", 12))],
             [sg.Text("CPF do pagador:", size=(20, 1)), sg.InputText("", key="cpf")],
             [sg.Text("--- Só Cartão ---", font=("Helvetica", 12))],

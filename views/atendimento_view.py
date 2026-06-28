@@ -31,13 +31,13 @@ class AtendimentoView:
         ]
         self.__window = sg.Window("Sistema de Clínica Médica").Layout(layout)
 
-    def pega_dados_atendimento(self):
+    def pega_dados_atendimento(self, clinicas, pacientes, profissionais):
         sg.ChangeLookAndFeel("DarkTeal4")
         layout = [
             [sg.Text("-------- DADOS ATENDIMENTO ----------", font=("Helvetica", 25))],
-            [sg.Text("Nome da Clínica:", size=(20, 1)), sg.InputText("", key="clinica")],
-            [sg.Text("CPF Paciente:", size=(20, 1)), sg.InputText("", key="paciente")],
-            [sg.Text("Nome do Profissional:", size=(20, 1)), sg.InputText("", key="profissional")],
+            [sg.Text("Nome da Clínica:", size=(20, 1)), sg.Combo(clinicas, readonly=True, key="clinica")],
+            [sg.Text("CPF Paciente:", size=(20, 1)), sg.Combo(pacientes, readonly=True, key="paciente")],
+            [sg.Text("Nome do Profissional:", size=(20, 1)), sg.Combo(profissionais, readonly=True, key="profissional")],
             [sg.Text("Data (DD/MM/AAAA):", size=(20, 1)), sg.InputText("", key="data")],
             [sg.Text("Hora Início (HH:MM):", size=(20, 1)), sg.InputText("", key="inicio")],
             [sg.Text("Hora Fim (HH:MM):", size=(20, 1)), sg.InputText("", key="fim")],
@@ -80,25 +80,22 @@ class AtendimentoView:
             string_todos = "Nenhum atendimento cadastrado."
         sg.Popup("-------- LISTA DE ATENDIMENTOS ----------", string_todos)
 
-    def seleciona_atendimento(self):
+    def seleciona_atendimento(self, lista_atendimentos):
         sg.ChangeLookAndFeel("DarkTeal4")
         layout = [
             [sg.Text("-------- SELECIONAR ATENDIMENTO ----------", font=("Helvetica", 25))],
-            [sg.Text("Digite a data (DD/MM/AAAA) do atendimento:", font=("Helvetica", 15))],
-            [sg.Text("Data:", size=(15, 1)), sg.InputText("", key="data")],
-            [sg.Text("Digite a hora de início (HH:MM) do atendimento:", font=("Helvetica", 15))],
-            [sg.Text("Hora Início:", size=(15, 1)), sg.InputText("", key="inicio")],
+            [sg.Text("Selecione o atendimento:", font=("Helvetica", 15))],
+            [sg.Text("Atendimento:", size=(15, 1)), sg.Combo(lista_atendimentos, readonly=True, key="atendimento", size=(40, 1))],
             [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
         ]
         self.__window = sg.Window("Selecionar Atendimento").Layout(layout)
         button, values = self.open()
         
-        data, inicio = None, None
+        escolha = None
         if button == "Confirmar":
-            data = values["data"]
-            inicio = values["inicio"]
+            escolha = values["atendimento"]
         self.close()
-        return data, inicio
+        return escolha
 
     def mostra_mensagem(self, msg):
         sg.popup("", msg)

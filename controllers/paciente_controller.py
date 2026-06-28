@@ -8,7 +8,6 @@ class PacienteController:
     def __init__(self, context):
         self.__context = context
         self.__paciente_view = PacienteView()
-        self.__profissional_view = ProfissionalView()
 
     # ==================== PACIENTES ====================
     def abrir_tela_paciente(self):
