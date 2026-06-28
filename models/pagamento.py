@@ -2,43 +2,39 @@ from datetime import date
 from typing import List
 from abc import ABC
 from .parcela import Parcela
-
+from .exceptions import TipoInvalidoException, ValorVazioException
 
 class Pagamento(ABC):
     def __init__(self, data: date, custo: float, parcelado: bool = False):
-        self.__data = data
-        self.__custo = custo
-        self.__parcelado = parcelado
+        self.data = data
+        self.custo = custo
+        self.parcelado = parcelado
         self.__parcelas: List[Parcela] = []
 
     @property
-    def data(self):
-        return self.__data
- 
+    def data(self): return self.__data
     @data.setter
     def data(self, data):
+        if not isinstance(data, date): raise TipoInvalidoException("Data deve ser do tipo date.")
         self.__data = data
- 
+
     @property
-    def custo(self):
-        return self.__custo
- 
+    def custo(self): return self.__custo
     @custo.setter
     def custo(self, custo):
-        self.__custo = custo
- 
+        if not isinstance(custo, (int, float)): raise TipoInvalidoException("Custo deve ser número.")
+        self.__custo = float(custo)
+
     @property
-    def parcelado(self):
-        return self.__parcelado
- 
+    def parcelado(self): return self.__parcelado
     @parcelado.setter
     def parcelado(self, parcelado: bool):
+        if not isinstance(parcelado, bool): raise TipoInvalidoException("Parcelado deve ser booleano.")
         self.__parcelado = parcelado
- 
+
     @property
-    def parcelas(self):
-        return self.__parcelas
- 
+    def parcelas(self): return self.__parcelas
+    
     def adicionar_parcela(self, numero, custo, vencimento, paga=False):
         nova_parcela = Parcela(numero, custo, vencimento, paga)
         self.__parcelas.append(nova_parcela)
@@ -52,41 +48,43 @@ class Pagamento(ABC):
     def obter_valor_restante(self):
         return self.custo - self.obter_valor_pago()
 
+
 class PIX(Pagamento):
     def __init__(self, data: date, custo: float, parcelado: bool, cpf: str):
         super().__init__(data, custo, parcelado)
-        self.__cpf = cpf
+        self.cpf = cpf
 
     @property
-    def cpf(self):
-        return self.__cpf
- 
+    def cpf(self): return self.__cpf
     @cpf.setter
     def cpf(self, cpf):
+        if not isinstance(cpf, str): raise TipoInvalidoException("CPF deve ser texto.")
+        if not cpf.strip(): raise ValorVazioException("CPF não pode ser vazio.")
         self.__cpf = cpf
+
 
 class Dinheiro(Pagamento):
     def __init__(self, data: date, custo: float, parcelado: bool):
         super().__init__(data, custo, parcelado)
 
+
 class Cartao(Pagamento):
     def __init__(self, data: date, custo: float, parcelado: bool, numero: int, bandeira: str):
         super().__init__(data, custo, parcelado)
-        self.__numero = numero
-        self.__bandeira = bandeira
+        self.numero = numero
+        self.bandeira = bandeira
 
     @property
-    def numero(self):
-        return self.__numero
- 
+    def numero(self): return self.__numero
     @numero.setter
     def numero(self, numero):
+        if not isinstance(numero, int): raise TipoInvalidoException("Número do cartão deve ser inteiro.")
         self.__numero = numero
- 
+
     @property
-    def bandeira(self):
-        return self.__bandeira
- 
+    def bandeira(self): return self.__bandeira
     @bandeira.setter
     def bandeira(self, bandeira):
+        if not isinstance(bandeira, str): raise TipoInvalidoException("Bandeira deve ser texto.")
+        if not bandeira.strip(): raise ValorVazioException("Bandeira não pode ser vazia.")
         self.__bandeira = bandeira
