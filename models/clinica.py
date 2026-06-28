@@ -3,48 +3,48 @@ from datetime import time
 
 class Clinica:
     def __init__(self, nome: str, cidade: str, descricao: str, hora_abertura: time, hora_fechamento: time):
-        self._nome = nome
-        self._cidade = cidade
-        self._descricao = descricao
-        self._hora_abertura = hora_abertura
-        self._hora_fechamento = hora_fechamento
+        self.__nome = nome
+        self.__cidade = cidade
+        self.__descricao = descricao
+        self.__hora_abertura = hora_abertura
+        self.__hora_fechamento = hora_fechamento
     
     @property
     def nome(self):
-        return self._nome
+        return self.__nome
 
     @nome.setter
     def nome(self, nome):
-        self._nome = nome
+        self.__nome = nome
 
     @property
     def cidade(self):
-        return self._cidade
+        return self.__cidade
 
     @cidade.setter
     def cidade(self, cidade):
-        self._cidade = cidade
+        self.__cidade = cidade
 
     @property
     def descricao(self):
-        return self._descricao
+        return self.__descricao
 
     @descricao.setter
     def descricao(self, descricao):
-        self._descricao = descricao
+        self.__descricao = descricao
 
     @property
     def hora_abertura(self):
-        return self._hora_abertura
+        return self.__hora_abertura
 
     @hora_abertura.setter
     def hora_abertura(self, hora_abertura):
-        self._hora_fechamento = hora_abertura
+        self.__hora_fechamento = hora_abertura
 
     @property
     def hora_fechamento(self):
-        return self._hora_fechamento
+        return self.__hora_fechamento
 
     @hora_fechamento.setter
     def hora_fechamento(self, hora_fechamento):
-        self._hora_fechamento = hora_fechamento
+        self.__hora_fechamento = hora_fechamento

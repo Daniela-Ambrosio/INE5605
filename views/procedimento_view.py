@@ -1,59 +1,92 @@
 import FreeSimpleGUI as sg
-from views.view_base import ViewBase
 
-class ProcedimentoView(ViewBase):
+class ProcedimentoView:
+    def __init__(self):
+        self.__window = None
+
+    def tela_opcoes(self):
+        self.init_opcoes()
+        button, values = self.open()
+        opcao = 0
+        if values:
+            if values.get("1"): opcao = 1
+            if values.get("2"): opcao = 2
+            if values.get("3"): opcao = 3
+            if values.get("4"): opcao = 4
+            if values.get("0") or button in (None, "Cancelar"): opcao = 0
+        self.close()
+        return opcao
+
+    def init_opcoes(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- PROCEDIMENTOS ----------", font=("Helvetica", 25))],
+            [sg.Text("Escolha sua opção", font=("Helvetica", 15))],
+            [sg.Radio("Cadastrar Procedimento", "RD1", key="1")],
+            [sg.Radio("Alterar Procedimento", "RD1", key="2")],
+            [sg.Radio("Listar Procedimentos", "RD1", key="3")],
+            [sg.Radio("Excluir Procedimento", "RD1", key="4")],
+            [sg.Radio("Retornar", "RD1", key="0")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Sistema de Clínica Médica").Layout(layout)
+
+    def pega_dados_procedimento(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- DADOS PROCEDIMENTO ----------", font=("Helvetica", 25))],
+            [sg.Text("Descrição:", size=(20, 1)), sg.InputText("", key="descricao")],
+            [sg.Text("Nome do Profissional:", size=(20, 1)), sg.InputText("", key="profissional")],
+            [sg.Text("Custo:", size=(20, 1)), sg.InputText("", key="custo")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Cadastrar Procedimento").Layout(layout)
+        button, values = self.open()
+        
+        dados = None
+        if button == "Confirmar":
+            dados = {
+                "descricao": values["descricao"],
+                "profissional": values["profissional"],
+                "custo": values["custo"]
+            }
+        self.close()
+        return dados
+
+    def mostra_procedimento(self, dados_procedimentos):
+        string_todos = ""
+        for dado in dados_procedimentos:
+            string_todos += "DESCRIÇÃO: " + dado["descricao"] + "\n"
+            string_todos += "PROFISSIONAL: " + dado["profissional"] + "\n"
+            string_todos += "CUSTO: R$ " + dado["custo"] + "\n\n"
+        
+        if not string_todos:
+            string_todos = "Nenhum procedimento cadastrado."
+        sg.Popup("-------- LISTA DE PROCEDIMENTOS ----------", string_todos)
+
+    def seleciona_procedimento(self, descricoes):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- SELECIONAR PROCEDIMENTO ----------", font=("Helvetica", 25))],
+            [sg.Text("Selecione a descrição do procedimento:", font=("Helvetica", 15))],
+            [sg.Text("Descrição:", size=(15, 1)), sg.Combo(descricoes, readonly=True, key="descricao")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Selecionar Procedimento").Layout(layout)
+        button, values = self.open()
+        
+        descricao = None
+        if button == "Confirmar":
+            descricao = values["descricao"]
+        self.close()
+        return descricao
+
+    def mostra_mensagem(self, msg):
+        sg.popup("", msg)
+
+    def close(self):
+        if self.__window: self.__window.Close()
+
     def open(self):
-        layout = [
-            [sg.Text('GERENCIAMENTO DE PROCEDIMENTOS', font=('Helvetica', 16, 'bold'))],
-            [sg.Text('─' * 40)],
-            [sg.Button('Listar', size=(25, 1))],
-            [sg.Button('Cadastrar', size=(25, 1))],
-            [sg.Button('Alterar', size=(25, 1))],
-            [sg.Button('Excluir', size=(25, 1))],
-            [sg.Text('─' * 40)],
-            [sg.Button('Voltar', size=(25, 1))]
-        ]
-        window = sg.Window('Procedimentos', layout, element_justification='center')
-        botao, valores = window.read()
-        window.close()
-        return botao, valores
-
-    def tela_formulario(self, profissionais, dados=None):
-        if dados is None:
-            dados = {'descricao': '', 'custo': '', 'profissional': profissionais[0] if profissionais else ''}
-            titulo = 'CADASTRAR PROCEDIMENTO'
-        else:
-            titulo = 'ALTERAR PROCEDIMENTO'
-
-        layout = [
-            [sg.Text(titulo, font=('Helvetica', 14, 'bold'))],
-            [sg.Text('Descrição', size=(20, 1)), sg.Input(default_text=dados['descricao'], key='descricao', size=(30, 1))],
-            [sg.Text('Custo Adicional (R$)', size=(20, 1)), sg.Input(default_text=dados['custo'], key='custo', size=(15, 1))],
-            [sg.Text('Profissional Responsável', size=(20, 1)), sg.Combo(profissionais, default_value=dados['profissional'], key='profissional', size=(28, 1), readonly=True)],
-            [sg.Button('Confirmar'), sg.Button('Cancelar')]
-        ]
-        window = sg.Window(titulo, layout)
-        botao, valores = window.read()
-        window.close()
-        return botao, valores
-
-    def tela_listagem(self, dados):
-        if not dados:
-            self.mostra_mensagem('Aviso', 'Nenhum procedimento cadastrado.')
-            return
-        colunas = ['Descrição', 'Custo (R$)', 'Profissional']
-        tabela = [
-            [d['descricao'], d['custo'], d['profissional']]
-            for d in dados
-        ]
-        layout = [
-            [sg.Text('PROCEDIMENTOS DO ATENDIMENTO', font=('Helvetica', 14, 'bold'))],
-            [sg.Table(values=tabela, headings=colunas, auto_size_columns=True, justification='left', key='tabela')],
-            [sg.Button('Voltar')]
-        ]
-        window = sg.Window('Listagem de Procedimentos', layout)
-        window.read()
-        window.close()
-
-    def tela_selecionar_atendimento(self, lista):
-        return self.mostra_lista_selecao('Selecione o Atendimento', lista)
+        button, values = self.__window.Read()
+        return button, values

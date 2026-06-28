@@ -15,111 +15,111 @@ class TipoAtendimento(Enum):
 class Atendimento:
     def __init__(self, clinica: Clinica, paciente: Paciente, profissional: ProfissionalSaude, data: date, inicio: time,
             fim: time, tipo: TipoAtendimento, custo: float):
-            self._clinica = clinica
-            self._paciente = paciente
-            self._profissional = profissional
-            self._data = data
-            self._inicio = inicio  #2025, 5, 19, 9, 0) -> 19/05/2025 às 09:00
-            self._fim = fim
-            self._tipo = tipo
-            self._procedimentos: List[Procedimento] = []
-            self._custo = custo
+            self.___clinica = clinica
+            self.___paciente = paciente
+            self.__profissional = profissional
+            self.__data = data
+            self.__inicio = inicio  #2025, 5, 19, 9, 0) -> 19/05/2025 às 09:00
+            self.__fim = fim
+            self.__tipo = tipo
+            self.__procedimentos: List[Procedimento] = []
+            self.__custo = custo
 
         #só existem se for instanciada uma classe Pagamento:
-            self._pagamento = None
-            self._parcelado = bool = False
+            self.__pagamento = None
+            self.__parcelado = bool = False
             
         
     @property
     def clinica(self):
-        return self._clinica
+        return self.___clinica
  
     @clinica.setter
     def clinica(self, clinica: Clinica):
-        self._clinica = clinica
+        self.___clinica = clinica
  
     @property
     def paciente(self):
-        return self._paciente
+        return self.___paciente
  
     @paciente.setter
     def paciente(self, paciente: Paciente):
-        self._paciente = paciente
+        self.___paciente = paciente
  
     @property
     def profissional(self):
-        return self._profissional
+        return self.__profissional
  
     @profissional.setter
     def profissional(self, profissional: ProfissionalSaude):
-        self._profissional = profissional
+        self.__profissional = profissional
     
     @property
     def data(self):
-        return self._data
+        return self.__data
 
     @data.setter
     def data(self, data: date):
-        self._data = data
+        self.__data = data
 
     @property
     def inicio(self):
-        return self._inicio
+        return self.__inicio
  
     @inicio.setter
     def inicio(self, inicio: datetime):
-        self._inicio = inicio
+        self.__inicio = inicio
  
     @property
     def fim(self):
-        return self._fim
+        return self.__fim
  
     @fim.setter
     def fim(self, fim: datetime):
-        self._fim = fim
+        self.__fim = fim
  
     @property
     def tipo(self):
-        return self._tipo
+        return self.__tipo
  
     @tipo.setter
     def tipo(self, tipo: TipoAtendimento):
-        self._tipo = tipo
+        self.__tipo = tipo
  
     @property
     def procedimentos(self):
-        return self._procedimentos
+        return self.__procedimentos
  
     #agregação recebe o objeto já instanciado
     def adicionar_procedimento(self, procedimento: Procedimento):
-        self._procedimentos.append(procedimento)
-        self._custo += procedimento.custo
+        self.__procedimentos.append(procedimento)
+        self.__custo += procedimento.custo
  
     @property
     def custo(self):
-        return self._custo
+        return self.__custo
  
     @custo.setter
     def custo(self, custo):
-        self._custo = custo
+        self.__custo = custo
  
     @property
     def pagamento(self):
-        return self._pagamento
+        return self.__pagamento
 
     @pagamento.setter
     def pagamento(self, pagamento):
-        self._pagamento = pagamento
+        self.__pagamento = pagamento
 
     @property
     def parcelado(self):
-        return self._parcelado
+        return self.__parcelado
 
     @parcelado.setter
     def parcelado(self, parcelado: bool):
-        self._parcelado = parcelado
+        self.__parcelado = parcelado
 
     # Agregação
     def registrar_pagamento(self, pagamento: Pagamento):
-        self._pagamento = pagamento
-        self._parcelado = pagamento.parcelado
+        self.__pagamento = pagamento
+        self.__parcelado = pagamento.parcelado

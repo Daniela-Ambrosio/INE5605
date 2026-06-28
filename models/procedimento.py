@@ -2,31 +2,31 @@ from .pessoa import ProfissionalSaude
 
 class Procedimento:
     def __init__(self, descricao: str, custo: float, profissional: ProfissionalSaude):
-        self._descricao = descricao
-        self._custo = custo
-        self._profissional = profissional
+        self.__descricao = descricao
+        self.__custo = custo
+        self.__profissional = profissional
 
     
     @property
     def descricao(self):
-        return self._descricao
+        return self.__descricao
  
     @descricao.setter
     def descricao(self, descricao):
-        self._descricao = descricao
+        self.__descricao = descricao
  
     @property
     def custo(self):
-        return self._custo
+        return self.__custo
  
     @custo.setter
     def custo(self, custo):
-        self._custo = custo
+        self.__custo = custo
  
     @property
     def profissional(self):
-        return self._profissional
+        return self.__profissional
  
     @profissional.setter
     def profissional(self, profissional: ProfissionalSaude):
-        self._profissional = profissional
+        self.__profissional = profissional

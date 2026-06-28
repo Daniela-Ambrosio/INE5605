@@ -1,29 +1,40 @@
 import FreeSimpleGUI as sg
-from views.view_base import ViewBase
 
-class RelatorioView(ViewBase):
+class RelatorioView:
+    def __init__(self):
+        self.__window = None
+
+    def tela_opcoes(self):
+        self.init_opcoes()
+        button, values = self.open()
+        opcao = 0
+        if values:
+            if values.get("1"): opcao = 1
+            if values.get("2"): opcao = 2
+            if values.get("3"): opcao = 3
+            if values.get("0") or button in (None, "Cancelar"): opcao = 0
+        self.close()
+        return opcao
+
+    def init_opcoes(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- RELATÓRIOS ----------", font=("Helvetica", 25))],
+            [sg.Text("Escolha sua opção", font=("Helvetica", 15))],
+            [sg.Radio("Listar Atendimentos da Clínica", "RD1", key="1")],
+            [sg.Radio("Listar Atendimentos do Paciente", "RD1", key="2")],
+            [sg.Radio("Listar Atendimentos do Profissional", "RD1", key="3")],
+            [sg.Radio("Retornar", "RD1", key="0")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Sistema de Clínica Médica").Layout(layout)
+
+    def mostra_mensagem(self, msg):
+        sg.popup("", msg)
+
+    def close(self):
+        if self.__window: self.__window.Close()
+
     def open(self):
-        layout = [
-            [sg.Text('GERENCIAMENTO DE RELATÓRIOS', font=('Helvetica', 16, 'bold'))],
-            [sg.Text('─' * 45)],
-            [sg.Button('Relatório 1', size=(25, 1)), sg.Text('Clínicas com mais atendimentos')],
-            [sg.Button('Relatório 2', size=(25, 1)), sg.Text('Procedimentos mais realizados')],
-            [sg.Button('Relatório 3', size=(25, 1)), sg.Text('Atendimentos mais caros e baratos')],
-            [sg.Button('Relatório 4', size=(25, 1)), sg.Text('Procedimentos mais caros e baratos')],
-            [sg.Text('─' * 45)],
-            [sg.Button('Voltar', size=(25, 1))]
-        ]
-        window = sg.Window('Relatórios', layout, element_justification='left')
-        botao, valores = window.read()
-        window.close()
-        return botao, valores
-
-    def mostra_relatorio(self, texto):
-        layout = [
-            [sg.Text('RESULTADO DO RELATÓRIO', font=('Helvetica', 14, 'bold'))],
-            [sg.Multiline(texto, size=(60, 20), disabled=True, font=('Courier', 10))],
-            [sg.Button('Voltar')]
-        ]
-        window = sg.Window('Relatório', layout)
-        window.read()
-        window.close()
+        button, values = self.__window.Read()
+        return button, values

@@ -1,53 +1,29 @@
 from datetime import date, time, datetime
 from models import Clinica, Paciente, ProfissionalSaude, Atendimento, TipoAtendimento, Procedimento
-from .validacoes import validar_tipo, RegraNegocioException
+from .validacoes import RegraNegocioException
 from .context import Context
 from views.atendimento_view import AtendimentoView
 from views.procedimento_view import ProcedimentoView
 
 class AtendimentoController:
     def __init__(self, context):
-        self.context = context
-        self.atendimento_view = AtendimentoView()
-        self.procedimento_view = ProcedimentoView()
+        self.__context = context
+        self.__atendimento_view = AtendimentoView()
+        self.__procedimento_view = ProcedimentoView()
 
-    # ================================================================
-    #  ATENDIMENTOS - UI
-    # ================================================================
+    # ==================== ATENDIMENTOS ====================
     def abrir_tela_atendimento(self):
         while True:
-            botao, valores = self.atendimento_view.open()
-            if botao in (None, 'Voltar'):
-                break
-            elif botao == 'Listar':
-                self._listar_atendimentos()
-            elif botao == 'Cadastrar':
-                self._cadastrar_atendimento()
-            elif botao == 'Alterar':
-                self._alterar_atendimento()
-            elif botao == 'Excluir':
-                self._excluir_atendimento()
-
-    def _obter_descricoes_atendimentos(self, lista=None):
-        if lista is None:
-            lista = self.context.atendimentos
-        descricoes = []
-        for at in lista:
-            pago = 'Pago' if at.pagamento else 'Pendente'
-            descricoes.append(
-                f"{at.paciente.nome} | {at.data.strftime('%d/%m/%Y')} | "
-                f"{at.clinica.nome} | R$ {at.custo:.2f} ({pago})"
-            )
-        return descricoes
+            opcao = self.__atendimento_view.tela_opcoes()
+            if opcao == 0: break
+            elif opcao == 1: self._cadastrar_atendimento()
+            elif opcao == 2: self._alterar_atendimento()
+            elif opcao == 3: self._listar_atendimentos()
+            elif opcao == 4: self._excluir_atendimento()
 
     def _listar_atendimentos(self):
-        atendimentos = self.context.atendimentos
-        if not atendimentos:
-            self.atendimento_view.mostra_mensagem(
-                'Aviso', 'Nenhum atendimento agendado.')
-            return
         dados = []
-        for at in atendimentos:
+        for at in self.context.atendimentos:
             pago = 'Pago' if at.pagamento else 'Pendente'
             dados.append({
                 'data': at.data.strftime('%d/%m/%Y'),
@@ -60,383 +36,202 @@ class AtendimentoController:
                 'custo': f"{at.custo:.2f}",
                 'status': pago
             })
-        self.atendimento_view.tela_listagem(dados)
+        self.__atendimento_view.mostra_atendimento(dados)
+
+    def _buscar_atendimento(self, dt, ini):
+        for at in self.context.atendimentos:
+            if at.data.strftime('%d/%m/%Y') == dt and at.inicio.strftime('%H:%M') == ini:
+                return at
+        return None
+
+    def _buscar_clinica(self, nome):
+        for c in self.context.clinicas:
+            if c.nome == nome: return c
+        return None
+
+    def _buscar_paciente(self, cpf):
+        for p in self.context.pacientes:
+            if p.cpf == cpf: return p
+        return None
+
+    def _buscar_profissional(self, nome):
+        for p in self.context.profissionais:
+            if p.nome == nome: return p
+        return None
 
     def _cadastrar_atendimento(self):
-        clinicas = self.context.clinicas
-        pacientes = self.context.pacientes
-        profissionais = self.context.profissionais
-
-        if not clinicas:
-            self.atendimento_view.mostra_mensagem(
-                'Aviso', 'Cadastre pelo menos uma clínica antes.')
-            return
-        if not pacientes:
-            self.atendimento_view.mostra_mensagem(
-                'Aviso', 'Cadastre pelo menos um paciente antes.')
-            return
-        if not profissionais:
-            self.atendimento_view.mostra_mensagem(
-                'Aviso', 'Cadastre pelo menos um profissional antes.')
-            return
-
-        nomes_clinicas = [f"{c.nome} ({c.cidade})" for c in clinicas]
-        nomes_pacientes = [f"{p.nome} (CPF: {p.cpf})" for p in pacientes]
-        nomes_profissionais = [f"{p.nome} ({p.especialidade.value})" for p in profissionais]
-        lista_tipos = [t.value for t in TipoAtendimento]
-
-        botao, vals = self.atendimento_view.tela_formulario(
-            nomes_clinicas, nomes_pacientes,
-            nomes_profissionais, lista_tipos
-        )
-        if botao == 'Confirmar':
+        vals = self.__atendimento_view.pega_dados_atendimento()
+        if vals:
             try:
-                idx_c = nomes_clinicas.index(vals['clinica'])
-                clinica = clinicas[idx_c]
-
-                idx_p = nomes_pacientes.index(vals['paciente'])
-                paciente = pacientes[idx_p]
-
-                idx_pr = nomes_profissionais.index(vals['profissional'])
-                profissional = profissionais[idx_pr]
-
-                data = datetime.strptime(vals['data'], '%d/%m/%Y').date()
-                hi = datetime.strptime(vals['hora_inicio'], '%H:%M').time()
-                hf = datetime.strptime(vals['hora_fim'], '%H:%M').time()
-
+                c = self._buscar_clinica(vals['clinica'])
+                pa = self._buscar_paciente(vals['paciente'])
+                pr = self._buscar_profissional(vals['profissional'])
+                if not c: raise ValueError("Clínica não encontrada.")
+                if not pa: raise ValueError("Paciente não encontrado.")
+                if not pr: raise ValueError("Profissional não encontrado.")
+                
+                dt = datetime.strptime(vals['data'], '%d/%m/%Y').date()
+                hi = datetime.strptime(vals['inicio'], '%H:%M').time()
+                hf = datetime.strptime(vals['fim'], '%H:%M').time()
+                
                 tipo = None
                 for t in TipoAtendimento:
-                    if t.value == vals['tipo']:
-                        tipo = t
-                        break
-
+                    if t.value == vals['tipo']: tipo = t
+                if not tipo: raise ValueError("Tipo inválido.")
+                
                 custo = float(vals['custo'])
-
-                self.agendar_atendimento(
-                    clinica, paciente, profissional,
-                    data, hi, hf, tipo, custo
-                )
-                self.atendimento_view.mostra_mensagem(
-                    'Sucesso', 'Atendimento agendado com sucesso!')
-            except (ValueError, IndexError):
-                self.atendimento_view.mostra_mensagem(
-                    'Erro',
-                    'Dados inválidos. Verifique os campos preenchidos.')
+                self.agendar_atendimento(c, pa, pr, dt, hi, hf, tipo, custo)
+                self.__atendimento_view.mostra_mensagem('Atendimento cadastrado!')
+            except ValueError as e:
+                self.__atendimento_view.mostra_mensagem(f'Erro: {e}')
             except RegraNegocioException as e:
-                self.atendimento_view.mostra_mensagem('Erro', str(e))
+                self.__atendimento_view.mostra_mensagem(str(e))
 
     def _alterar_atendimento(self):
-        atendimentos = self.context.atendimentos
-        if not atendimentos:
-            self.atendimento_view.mostra_mensagem(
-                'Aviso', 'Nenhum atendimento agendado.')
-            return
-        descricoes = self._obter_descricoes_atendimentos(atendimentos)
-        idx = self.atendimento_view.mostra_lista_selecao(
-            'Selecionar Atendimento para Alterar', descricoes)
-        if idx is None:
-            return
-        at = atendimentos[idx]
+        self._listar_atendimentos()
+        dt, ini = self.__atendimento_view.seleciona_atendimento()
+        if dt and ini:
+            at = self._buscar_atendimento(dt, ini)
+            if not at:
+                self.__atendimento_view.mostra_mensagem('Atendimento não encontrado.')
+                return
+            vals = self.__atendimento_view.pega_dados_atendimento()
+            if vals:
+                try:
+                    c = self._buscar_clinica(vals['clinica'])
+                    pa = self._buscar_paciente(vals['paciente'])
+                    pr = self._buscar_profissional(vals['profissional'])
+                    if not c: raise ValueError("Clínica não encontrada.")
+                    if not pa: raise ValueError("Paciente não encontrado.")
+                    if not pr: raise ValueError("Profissional não encontrado.")
+                    
+                    ndt = datetime.strptime(vals['data'], '%d/%m/%Y').date()
+                    nhi = datetime.strptime(vals['inicio'], '%H:%M').time()
+                    nhf = datetime.strptime(vals['fim'], '%H:%M').time()
+                    tipo = None
+                    for t in TipoAtendimento:
+                        if t.value == vals['tipo']: tipo = t
+                    if not tipo: raise ValueError("Tipo inválido.")
+                    custo = float(vals['custo'])
 
-        clinicas = self.context.clinicas
-        pacientes = self.context.pacientes
-        profissionais = self.context.profissionais
-
-        nomes_clinicas = [f"{c.nome} ({c.cidade})" for c in clinicas]
-        nomes_pacientes = [f"{p.nome} (CPF: {p.cpf})" for p in pacientes]
-        nomes_profissionais = [f"{p.nome} ({p.especialidade.value})" for p in profissionais]
-        lista_tipos = [t.value for t in TipoAtendimento]
-
-        dados = {
-            'clinica': f"{at.clinica.nome} ({at.clinica.cidade})",
-            'paciente': f"{at.paciente.nome} (CPF: {at.paciente.cpf})",
-            'profissional': f"{at.profissional.nome} ({at.profissional.especialidade.value})",
-            'data': at.data.strftime('%d/%m/%Y'),
-            'inicio': at.inicio.strftime('%H:%M'),
-            'fim': at.fim.strftime('%H:%M'),
-            'tipo': at.tipo.value,
-            'custo': f"{at.custo:.2f}"
-        }
-        botao, vals = self.atendimento_view.tela_formulario(
-            nomes_clinicas, nomes_pacientes,
-            nomes_profissionais, lista_tipos, dados
-        )
-        if botao == 'Confirmar':
-            try:
-                idx_c = nomes_clinicas.index(vals['clinica'])
-                clinica = clinicas[idx_c]
-
-                idx_p = nomes_pacientes.index(vals['paciente'])
-                paciente = pacientes[idx_p]
-
-                idx_pr = nomes_profissionais.index(vals['profissional'])
-                profissional = profissionais[idx_pr]
-
-                data = datetime.strptime(vals['data'], '%d/%m/%Y').date()
-                hi = datetime.strptime(vals['hora_inicio'], '%H:%M').time()
-                hf = datetime.strptime(vals['hora_fim'], '%H:%M').time()
-
-                tipo = None
-                for t in TipoAtendimento:
-                    if t.value == vals['tipo']:
-                        tipo = t
-                        break
-
-                custo = float(vals['custo'])
-
-                self.alterar_atendimento(
-                    at, clinica, paciente, profissional,
-                    data, hi, hf, tipo, custo
-                )
-                self.atendimento_view.mostra_mensagem(
-                    'Sucesso', 'Atendimento alterado com sucesso!')
-            except (ValueError, IndexError):
-                self.atendimento_view.mostra_mensagem(
-                    'Erro',
-                    'Dados inválidos. Verifique os campos preenchidos.')
-            except RegraNegocioException as e:
-                self.atendimento_view.mostra_mensagem('Erro', str(e))
+                    self.alterar_atendimento(at, c, pa, pr, ndt, nhi, nhf, tipo, custo)
+                    self.__atendimento_view.mostra_mensagem('Atendimento alterado!')
+                except Exception as e:
+                    self.__atendimento_view.mostra_mensagem(f'Erro: {e}')
 
     def _excluir_atendimento(self):
-        atendimentos = self.context.atendimentos
-        if not atendimentos:
-            self.atendimento_view.mostra_mensagem(
-                'Aviso', 'Nenhum atendimento agendado.')
-            return
-        descricoes = self._obter_descricoes_atendimentos(atendimentos)
-        idx = self.atendimento_view.mostra_lista_selecao(
-            'Selecionar Atendimento para Excluir', descricoes)
-        if idx is None:
-            return
-        atendimento = atendimentos[idx]
-        try:
-            self.excluir_atendimento(atendimento)
-            self.atendimento_view.mostra_mensagem(
-                'Sucesso', 'Atendimento excluído com sucesso!')
-        except RegraNegocioException as e:
-            self.atendimento_view.mostra_mensagem('Erro', str(e))
+        self._listar_atendimentos()
+        dt, ini = self.__atendimento_view.seleciona_atendimento()
+        if dt and ini:
+            at = self._buscar_atendimento(dt, ini)
+            if at:
+                self.excluir_atendimento(at)
+                self.__atendimento_view.mostra_mensagem('Excluído com sucesso!')
+            else:
+                self.__atendimento_view.mostra_mensagem('Não encontrado.')
 
-    # ================================================================
-    #  PROCEDIMENTOS - UI
-    # ================================================================
+    # ==================== PROCEDIMENTOS ====================
     def abrir_tela_procedimento(self):
         while True:
-            botao, valores = self.procedimento_view.open()
-            if botao in (None, 'Voltar'):
-                break
-            elif botao == 'Listar':
-                self._listar_procedimentos()
-            elif botao == 'Cadastrar':
-                self._cadastrar_procedimento()
-            elif botao == 'Alterar':
-                self._alterar_procedimento()
-            elif botao == 'Excluir':
-                self._excluir_procedimento()
+            opcao = self.__procedimento_view.tela_opcoes()
+            if opcao == 0: break
+            elif opcao == 1: self._cadastrar_procedimento()
+            elif opcao == 2: self._alterar_procedimento()
+            elif opcao == 3: self._listar_procedimentos()
+            elif opcao == 4: self._excluir_procedimento()
 
     def _selecionar_atendimento_para_procedimento(self):
-        atendimentos = self.context.atendimentos
-        if not atendimentos:
-            self.procedimento_view.mostra_mensagem(
-                'Aviso', 'Nenhum atendimento cadastrado.')
-            return None
-        descricoes = self._obter_descricoes_atendimentos(atendimentos)
-        idx = self.procedimento_view.tela_selecionar_atendimento(descricoes)
-        if idx is None:
-            return None
-        return atendimentos[idx]
+        self._listar_atendimentos()
+        dt, ini = self.__atendimento_view.seleciona_atendimento()
+        if dt and ini: 
+            at = self._buscar_atendimento(dt, ini)
+            if at:
+                return at
+            else:
+                self.__procedimento_view.mostra_mensagem("Atendimento não encontrado.")
+                return None
+        return None
 
     def _listar_procedimentos(self):
-        atendimento = self._selecionar_atendimento_para_procedimento()
-        if atendimento is None:
-            return
-        if not atendimento.procedimentos:
-            self.procedimento_view.mostra_mensagem(
-                'Aviso',
-                'Nenhum procedimento neste atendimento.')
-            return
-        dados = []
-        for proc in atendimento.procedimentos:
-            dados.append({
-                'descricao': proc.descricao,
-                'custo': f"{proc.custo:.2f}",
-                'profissional': proc.profissional.nome
-            })
-        self.procedimento_view.tela_listagem(dados)
+        at = self._selecionar_atendimento_para_procedimento()
+        if at:
+            dados = []
+            for proc in at.procedimentos:
+                dados.append({
+                    'descricao': proc.descricao,
+                    'custo': f"{proc.custo:.2f}",
+                    'profissional': proc.profissional.nome
+                })
+            self.__procedimento_view.mostra_procedimento(dados)
 
     def _cadastrar_procedimento(self):
-        atendimento = self._selecionar_atendimento_para_procedimento()
-        if atendimento is None:
-            return
-        if atendimento.pagamento:
-            self.procedimento_view.mostra_mensagem(
-                'Aviso',
-                'Atendimento já possui pagamento. Não é possível '
-                'adicionar procedimentos.')
-            return
-        profissionais = self.context.profissionais
-        if not profissionais:
-            self.procedimento_view.mostra_mensagem(
-                'Aviso', 'Cadastre pelo menos um profissional antes.')
-            return
-
-        nomes_prof = [f"{p.nome} ({p.especialidade.value})" for p in profissionais]
-        botao, vals = self.procedimento_view.tela_formulario(nomes_prof)
-        if botao == 'Confirmar':
+        at = self._selecionar_atendimento_para_procedimento()
+        if not at: return
+        vals = self.__procedimento_view.pega_dados_procedimento()
+        if vals:
             try:
-                idx_pr = nomes_prof.index(vals['profissional'])
-                responsavel = profissionais[idx_pr]
+                pr = self._buscar_profissional(vals['profissional'])
+                if not pr: raise ValueError("Profissional não encontrado.")
                 custo = float(vals['custo'])
-                self.adicionar_procedimento_a_atendimento(
-                    atendimento, vals['descricao'], custo, responsavel
-                )
-                self.procedimento_view.mostra_mensagem(
-                    'Sucesso',
-                    f"Procedimento adicionado! "
-                    f"Custo total: R$ {atendimento.custo:.2f}")
-            except (ValueError, IndexError):
-                self.procedimento_view.mostra_mensagem(
-                    'Erro', 'Dados inválidos.')
-            except RegraNegocioException as e:
-                self.procedimento_view.mostra_mensagem('Erro', str(e))
+                self.adicionar_procedimento_a_atendimento(at, vals['descricao'], custo, pr)
+                self.__procedimento_view.mostra_mensagem('Procedimento adicionado!')
+            except Exception as e:
+                self.__procedimento_view.mostra_mensagem(f'Erro: {e}')
 
     def _alterar_procedimento(self):
-        atendimento = self._selecionar_atendimento_para_procedimento()
-        if atendimento is None:
+        at = self._selecionar_atendimento_para_procedimento()
+        if not at: return
+        self._listar_procedimentos()
+        descricoes = [p.descricao for p in at.procedimentos]
+        desc = self.__procedimento_view.seleciona_procedimento(descricoes)
+        proc_target = None
+        for p in at.procedimentos:
+            if p.descricao == desc: proc_target = p
+        if not proc_target:
+            self.__procedimento_view.mostra_mensagem("Não encontrado.")
             return
-        if atendimento.pagamento:
-            self.procedimento_view.mostra_mensagem(
-                'Aviso',
-                'Atendimento já possui pagamento. Não é possível '
-                'alterar procedimentos.')
-            return
-        if not atendimento.procedimentos:
-            self.procedimento_view.mostra_mensagem(
-                'Aviso', 'Nenhum procedimento neste atendimento.')
-            return
-        desc_procs = [
-            f"{p.descricao} | R$ {p.custo:.2f} | {p.profissional.nome}"
-            for p in atendimento.procedimentos
-        ]
-        idx = self.procedimento_view.mostra_lista_selecao(
-            'Selecionar Procedimento para Alterar', desc_procs)
-        if idx is None:
-            return
-        procedimento = atendimento.procedimentos[idx]
-        profissionais = self.context.profissionais
-        nomes_prof = [f"{p.nome} ({p.especialidade.value})" for p in profissionais]
-        dados = {
-            'descricao': procedimento.descricao,
-            'custo': f"{procedimento.custo:.2f}",
-            'profissional': f"{procedimento.profissional.nome} "
-                            f"({procedimento.profissional.especialidade.value})"
-        }
-        botao, vals = self.procedimento_view.tela_formulario(nomes_prof, dados)
-        if botao == 'Confirmar':
+
+        vals = self.__procedimento_view.pega_dados_procedimento()
+        if vals:
             try:
-                idx_pr = nomes_prof.index(vals['profissional'])
-                responsavel = profissionais[idx_pr]
+                pr = self._buscar_profissional(vals['profissional'])
+                if not pr: raise ValueError("Profissional não encontrado.")
                 custo = float(vals['custo'])
-                self.alterar_procedimento(
-                    atendimento, procedimento,
-                    vals['descricao'], custo, responsavel
-                )
-                self.procedimento_view.mostra_mensagem(
-                    'Sucesso',
-                    f"Procedimento alterado! "
-                    f"Custo total: R$ {atendimento.custo:.2f}")
-            except (ValueError, IndexError):
-                self.procedimento_view.mostra_mensagem(
-                    'Erro', 'Dados inválidos.')
-            except RegraNegocioException as e:
-                self.procedimento_view.mostra_mensagem('Erro', str(e))
+                self.alterar_procedimento(at, proc_target, vals['descricao'], custo, pr)
+                self.__procedimento_view.mostra_mensagem('Alterado!')
+            except Exception as e:
+                self.__procedimento_view.mostra_mensagem(f'Erro: {e}')
 
     def _excluir_procedimento(self):
-        atendimento = self._selecionar_atendimento_para_procedimento()
-        if atendimento is None:
-            return
-        if atendimento.pagamento:
-            self.procedimento_view.mostra_mensagem(
-                'Aviso',
-                'Atendimento já possui pagamento. Não é possível '
-                'excluir procedimentos.')
-            return
-        if not atendimento.procedimentos:
-            self.procedimento_view.mostra_mensagem(
-                'Aviso', 'Nenhum procedimento neste atendimento.')
-            return
-        desc_procs = [
-            f"{p.descricao} | R$ {p.custo:.2f} | {p.profissional.nome}"
-            for p in atendimento.procedimentos
-        ]
-        idx = self.procedimento_view.mostra_lista_selecao(
-            'Selecionar Procedimento para Excluir', desc_procs)
-        if idx is None:
-            return
-        procedimento = atendimento.procedimentos[idx]
-        try:
-            self.excluir_procedimento(atendimento, procedimento)
-            self.procedimento_view.mostra_mensagem(
-                'Sucesso',
-                f"Procedimento removido! "
-                f"Custo total: R$ {atendimento.custo:.2f}")
-        except RegraNegocioException as e:
-            self.procedimento_view.mostra_mensagem('Erro', str(e))
+        at = self._selecionar_atendimento_para_procedimento()
+        if not at: return
+        descricoes = [p.descricao for p in at.procedimentos]
+        desc = self.__procedimento_view.seleciona_procedimento(descricoes)
+        proc_target = None
+        for p in at.procedimentos:
+            if p.descricao == desc: proc_target = p
+        if proc_target:
+            self.excluir_procedimento(at, proc_target)
+            self.__procedimento_view.mostra_mensagem("Excluído.")
 
-
-    # ================================================================
-    #  REGRAS DE NEGÓCIO
-    # ================================================================
+    # ==================== REGRAS DE NEGOCIO ====================
     def agendar_atendimento(self, clinica: Clinica, paciente: Paciente, profissional: ProfissionalSaude, 
                             data: date, hora_inicio: time, hora_fim: time, 
                             tipo: TipoAtendimento, custo: float = 0.0) -> Atendimento:
-        validar_tipo(clinica, Clinica)
-        validar_tipo(paciente, Paciente)
-        validar_tipo(profissional, ProfissionalSaude)
-        validar_tipo(tipo, TipoAtendimento)
-
         idade = 2026 - paciente.data_nascimento.year 
-        if idade < 18:
-            raise RegraNegocioException("Somente pacientes com mais de 18 anos podem realizar atendimentos de forma independente.")
-
+        if idade < 18: raise RegraNegocioException("Maioridade necessária.")
         if hora_inicio < clinica.hora_abertura or hora_fim > clinica.hora_fechamento:
-            raise RegraNegocioException("O horário do atendimento está fora do horário de funcionamento da clínica")
-
+            raise RegraNegocioException("Fora do horário da clínica.")
         for at in self.context.atendimentos:
-            if at.profissional.cpf == profissional.cpf and at.data == data:
-                if not (hora_fim <= at.fim or hora_inicio >= at.inicio):
-                    raise RegraNegocioException(
-                        f"O profissional {profissional.nome} já possui um atendimento agendado "
-                        f"das {at.inicio.strftime('%H:%M')} às {at.fim.strftime('%H:%M')} neste dia."
-                    )
-                    
-        atendimento = Atendimento(clinica, paciente, profissional, data, hora_inicio, hora_fim, tipo, custo)
-        if self.atendimento_dao.get(atendimento.inicio.isoformat()) is not None:
-            raise RegraNegocioException(f"Já existe um atendimento registrado com esse horário de início ({hora_inicio.strftime('%H:%M')}).")
-
-        if atendimento not in self.context.atendimentos: self.context.atendimentos.append(atendimento)
-        return atendimento
+            if at.data == data and at.inicio == hora_inicio:
+                raise RegraNegocioException("Horário já preenchido.")
+        at = Atendimento(clinica, paciente, profissional, data, hora_inicio, hora_fim, tipo, custo)
+        self.context.atendimentos.append(at)
+        return at
 
     def alterar_atendimento(self, atendimento: Atendimento, clinica: Clinica, paciente: Paciente, 
                             profissional: ProfissionalSaude, data: date, hora_inicio: time, hora_fim: time, 
                             tipo: TipoAtendimento, custo: float):
-        validar_tipo(clinica, Clinica)
-        validar_tipo(paciente, Paciente)
-        validar_tipo(profissional, ProfissionalSaude)
-        validar_tipo(tipo, TipoAtendimento)
-
-        idade = 2026 - paciente.data_nascimento.year 
-        if idade < 18:
-            raise RegraNegocioException("Somente pacientes com mais de 18 anos podem realizar atendimentos de forma independente.")
-
-        if hora_inicio < clinica.hora_abertura or hora_fim > clinica.hora_fechamento:
-            raise RegraNegocioException("O horário del atendimento está fora do horário de funcionamento da clínica")
-
-        if atendimento.inicio != hora_inicio:
-            novo_id = hora_inicio.isoformat()
-            if self.atendimento_dao.get(novo_id) is not None:
-                raise RegraNegocioException(f"Já existe um atendimento registrado com esse novo horário de início ({hora_inicio.strftime('%H:%M')}).")
-            if atendimento in self.context.atendimentos: self.context.atendimentos.remove(atendimento)
-
         atendimento.clinica = clinica
         atendimento.paciente = paciente
         atendimento.profissional = profissional
@@ -446,35 +241,22 @@ class AtendimentoController:
         atendimento.tipo = tipo
         atendimento.custo = custo
 
-        if atendimento not in self.context.atendimentos: self.context.atendimentos.append(atendimento)
-
     def excluir_atendimento(self, atendimento: Atendimento):
         if atendimento in self.context.atendimentos: self.context.atendimentos.remove(atendimento)
 
     def adicionar_procedimento_a_atendimento(self, atendimento: Atendimento, descricao: str, custo: float, profissional: ProfissionalSaude) -> Procedimento:
-        validar_tipo(atendimento, Atendimento)
-        validar_tipo(profissional, ProfissionalSaude)
-        
         procedimento = Procedimento(descricao, custo, profissional)
         atendimento.adicionar_procedimento(procedimento)
-        
         return procedimento
 
     def alterar_procedimento(self, atendimento: Atendimento, procedimento: Procedimento, descricao: str, custo: float, profissional: ProfissionalSaude):
-        validar_tipo(atendimento, Atendimento)
-        validar_tipo(profissional, ProfissionalSaude)
-
         atendimento.custo -= procedimento.custo
         procedimento.descricao = descricao
         procedimento.custo = custo
         procedimento.profissional = profissional
         atendimento.custo += custo
-        
-        
 
     def excluir_procedimento(self, atendimento: Atendimento, procedimento: Procedimento):
-        validar_tipo(atendimento, Atendimento)
         if procedimento in atendimento.procedimentos:
             atendimento.custo -= procedimento.custo
             atendimento.procedimentos.remove(procedimento)
-            

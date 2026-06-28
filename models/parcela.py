@@ -3,39 +3,39 @@ from datetime import date
 
 class Parcela:
     def __init__(self, numero: int, custo: float, vencimento: date, paga: bool = False):
-        self._numero = numero
-        self._custo = custo
-        self._vencimento = vencimento
-        self._paga = paga
+        self.__numero = numero
+        self.__custo = custo
+        self.__vencimento = vencimento
+        self.__paga = paga
 
     @property
     def numero(self):
-        return self._numero
+        return self.__numero
 
     @numero.setter
     def numero(self, numero):
-        self._numero = numero
+        self.__numero = numero
 
     @property
     def custo(self):
-        return self._custo
+        return self.__custo
 
     @custo.setter
     def custo(self, custo):
-        self._custo = custo
+        self.__custo = custo
 
     @property
     def vencimento(self):
-        return self._vencimento
+        return self.__vencimento
 
     @vencimento.setter
     def vencimento(self, vencimento):
-        self._vencimento = vencimento
+        self.__vencimento = vencimento
 
     @property
     def paga(self):
-        return self._paga
+        return self.__paga
 
     @paga.setter
     def paga(self, paga):
-        self._paga = paga
+        self.__paga = paga

@@ -1,58 +1,97 @@
 import FreeSimpleGUI as sg
-from views.view_base import ViewBase
 
-class ClinicaView(ViewBase):
+class ClinicaView:
+    def __init__(self):
+        self.__window = None
+
+    def tela_opcoes(self):
+        self.init_opcoes()
+        button, values = self.open()
+        opcao = 0
+        if values:
+            if values.get("1"): opcao = 1
+            if values.get("2"): opcao = 2
+            if values.get("3"): opcao = 3
+            if values.get("4"): opcao = 4
+            if values.get("0") or button in (None, "Cancelar"): opcao = 0
+        self.close()
+        return opcao
+
+    def init_opcoes(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- CLÍNICAS ----------", font=("Helvetica", 25))],
+            [sg.Text("Escolha sua opção", font=("Helvetica", 15))],
+            [sg.Radio("Cadastrar Clínica", "RD1", key="1")],
+            [sg.Radio("Alterar Clínica", "RD1", key="2")],
+            [sg.Radio("Listar Clínicas", "RD1", key="3")],
+            [sg.Radio("Excluir Clínica", "RD1", key="4")],
+            [sg.Radio("Retornar", "RD1", key="0")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Sistema de Clínica Médica").Layout(layout)
+
+    def pega_dados_clinica(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- DADOS CLÍNICA ----------", font=("Helvetica", 25))],
+            [sg.Text("Nome:", size=(15, 1)), sg.InputText("", key="nome")],
+            [sg.Text("Cidade:", size=(15, 1)), sg.InputText("", key="cidade")],
+            [sg.Text("Descrição:", size=(15, 1)), sg.InputText("", key="descricao")],
+            [sg.Text("Abertura (HH:MM):", size=(15, 1)), sg.InputText("", key="hora_abertura")],
+            [sg.Text("Fechamento (HH:MM):", size=(15, 1)), sg.InputText("", key="hora_fechamento")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Cadastrar Clínica").Layout(layout)
+        button, values = self.open()
+        
+        dados = None
+        if button == "Confirmar":
+            dados = {
+                "nome": values["nome"],
+                "cidade": values["cidade"],
+                "descricao": values["descricao"],
+                "hora_abertura": values["hora_abertura"],
+                "hora_fechamento": values["hora_fechamento"]
+            }
+        self.close()
+        return dados
+
+    def mostra_clinica(self, dados_clinica):
+        string_todos = ""
+        for dado in dados_clinica:
+            string_todos += "NOME: " + dado["nome"] + "\n"
+            string_todos += "CIDADE: " + dado["cidade"] + "\n"
+            string_todos += "ABERTURA: " + dado["hora_abertura"] + "\n"
+            string_todos += "FECHAMENTO: " + dado["hora_fechamento"] + "\n\n"
+        
+        if not string_todos:
+            string_todos = "Nenhuma clínica cadastrada."
+        sg.Popup("-------- LISTA DE CLÍNICAS ----------", string_todos)
+
+    def seleciona_clinica(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- SELECIONAR CLÍNICA ----------", font=("Helvetica", 25))],
+            [sg.Text("Digite o Nome da clínica que deseja selecionar:", font=("Helvetica", 15))],
+            [sg.Text("Nome:", size=(15, 1)), sg.InputText("", key="nome")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Selecionar Clínica").Layout(layout)
+        button, values = self.open()
+        
+        nome = None
+        if button == "Confirmar":
+            nome = values["nome"]
+        self.close()
+        return nome
+
+    def mostra_mensagem(self, msg):
+        sg.popup("", msg)
+
+    def close(self):
+        if self.__window: self.__window.Close()
+
     def open(self):
-        layout = [
-            [sg.Text('GERENCIAMENTO DE CLÍNICAS', font=('Helvetica', 16, 'bold'))],
-            [sg.Text('─' * 40)],
-            [sg.Button('Listar', size=(25, 1))],
-            [sg.Button('Cadastrar', size=(25, 1))],
-            [sg.Button('Alterar', size=(25, 1))],
-            [sg.Button('Excluir', size=(25, 1))],
-            [sg.Text('─' * 40)],
-            [sg.Button('Voltar', size=(25, 1))]
-        ]
-        window = sg.Window('Clínicas', layout, element_justification='center')
-        botao, valores = window.read()
-        window.close()
-        return botao, valores
-
-    def tela_formulario(self, dados=None):
-        if dados is None:
-            dados = {'nome': '', 'cidade': '', 'descricao': '', 'hora_abertura': '', 'hora_fechamento': ''}
-            titulo = 'CADASTRAR CLÍNICA'
-        else:
-            titulo = 'ALTERAR CLÍNICA'
-
-        layout = [
-            [sg.Text(titulo, font=('Helvetica', 14, 'bold'))],
-            [sg.Text('Nome', size=(20, 1)), sg.Input(default_text=dados['nome'], key='nome', size=(30, 1))],
-            [sg.Text('Cidade', size=(20, 1)), sg.Input(default_text=dados['cidade'], key='cidade', size=(30, 1))],
-            [sg.Text('Descrição', size=(20, 1)), sg.Input(default_text=dados['descricao'], key='descricao', size=(30, 1))],
-            [sg.Text('Hora Abertura (HH:MM)', size=(20, 1)), sg.Input(default_text=dados['hora_abertura'], key='hora_abertura', size=(10, 1))],
-            [sg.Text('Hora Fechamento (HH:MM)', size=(20, 1)), sg.Input(default_text=dados['hora_fechamento'], key='hora_fechamento', size=(10, 1))],
-            [sg.Button('Confirmar'), sg.Button('Cancelar')]
-        ]
-        window = sg.Window(titulo, layout)
-        botao, valores = window.read()
-        window.close()
-        return botao, valores
-
-    def tela_listagem(self, dados):
-        if not dados:
-            self.mostra_mensagem('Aviso', 'Nenhuma clínica cadastrada.')
-            return
-        colunas = ['Nome', 'Cidade', 'Descrição', 'Abertura', 'Fechamento']
-        tabela = [
-            [d['nome'], d['cidade'], d['descricao'], d['hora_abertura'], d['hora_fechamento']]
-            for d in dados
-        ]
-        layout = [
-            [sg.Text('CLÍNICAS CADASTRADAS', font=('Helvetica', 14, 'bold'))],
-            [sg.Table(values=tabela, headings=colunas, auto_size_columns=True, justification='left', key='tabela')],
-            [sg.Button('Voltar')]
-        ]
-        window = sg.Window('Listagem de Clínicas', layout)
-        window.read()
-        window.close()
+        button, values = self.__window.Read()
+        return button, values

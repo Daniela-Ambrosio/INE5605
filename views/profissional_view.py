@@ -1,58 +1,98 @@
 import FreeSimpleGUI as sg
-from views.view_base import ViewBase
 
-class ProfissionalView(ViewBase):
+class ProfissionalView:
+    def __init__(self):
+        self.__window = None
+
+    def tela_opcoes(self):
+        self.init_opcoes()
+        button, values = self.open()
+        opcao = 0
+        if values:
+            if values.get("1"): opcao = 1
+            if values.get("2"): opcao = 2
+            if values.get("3"): opcao = 3
+            if values.get("4"): opcao = 4
+            if values.get("0") or button in (None, "Cancelar"): opcao = 0
+        self.close()
+        return opcao
+
+    def init_opcoes(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- PROFISSIONAIS ----------", font=("Helvetica", 25))],
+            [sg.Text("Escolha sua opção", font=("Helvetica", 15))],
+            [sg.Radio("Cadastrar Profissional", "RD1", key="1")],
+            [sg.Radio("Alterar Profissional", "RD1", key="2")],
+            [sg.Radio("Listar Profissionais", "RD1", key="3")],
+            [sg.Radio("Excluir Profissional", "RD1", key="4")],
+            [sg.Radio("Retornar", "RD1", key="0")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Sistema de Clínica Médica").Layout(layout)
+
+    def pega_dados_profissional(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- DADOS PROFISSIONAL ----------", font=("Helvetica", 25))],
+            [sg.Text("Nome:", size=(15, 1)), sg.InputText("", key="nome")],
+            [sg.Text("Telefone:", size=(15, 1)), sg.InputText("", key="telefone")],
+            [sg.Text("CPF:", size=(15, 1)), sg.InputText("", key="cpf")],
+            [sg.Text("Registro:", size=(15, 1)), sg.InputText("", key="registro")],
+            [sg.Text("Especialidade:", size=(15, 1)), sg.Combo(['Clínico Geral', 'Pediatria', 'Cardiologia', 'Dermatologia', 'Ortopedia', 'Ginecologia'], readonly=True, key="especialidade")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Cadastrar Profissional").Layout(layout)
+        button, values = self.open()
+        
+        dados = None
+        if button == "Confirmar":
+            dados = {
+                "nome": values["nome"],
+                "telefone": values["telefone"],
+                "cpf": values["cpf"],
+                "registro": values["registro"],
+                "especialidade": values["especialidade"]
+            }
+        self.close()
+        return dados
+
+    def mostra_profissional(self, dados_profissional):
+        string_todos = ""
+        for dado in dados_profissional:
+            string_todos += "NOME: " + dado["nome"] + "\n"
+            string_todos += "FONE: " + dado["telefone"] + "\n"
+            string_todos += "CPF: " + dado["cpf"] + "\n"
+            string_todos += "REGISTRO: " + dado["registro"] + "\n"
+            string_todos += "ESPECIALIDADE: " + dado["especialidade"] + "\n\n"
+        
+        if not string_todos:
+            string_todos = "Nenhum profissional cadastrado."
+        sg.Popup("-------- LISTA DE PROFISSIONAIS ----------", string_todos)
+
+    def seleciona_profissional(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- SELECIONAR PROFISSIONAL ----------", font=("Helvetica", 25))],
+            [sg.Text("Digite o CPF do profissional que deseja selecionar:", font=("Helvetica", 15))],
+            [sg.Text("CPF:", size=(15, 1)), sg.InputText("", key="cpf")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Selecionar Profissional").Layout(layout)
+        button, values = self.open()
+        
+        cpf = None
+        if button == "Confirmar":
+            cpf = values["cpf"]
+        self.close()
+        return cpf
+
+    def mostra_mensagem(self, msg):
+        sg.popup("", msg)
+
+    def close(self):
+        if self.__window: self.__window.Close()
+
     def open(self):
-        layout = [
-            [sg.Text('GERENCIAMENTO DE PROFISSIONAIS', font=('Helvetica', 16, 'bold'))],
-            [sg.Text('─' * 40)],
-            [sg.Button('Listar', size=(25, 1))],
-            [sg.Button('Cadastrar', size=(25, 1))],
-            [sg.Button('Alterar', size=(25, 1))],
-            [sg.Button('Excluir', size=(25, 1))],
-            [sg.Text('─' * 40)],
-            [sg.Button('Voltar', size=(25, 1))]
-        ]
-        window = sg.Window('Profissionais', layout, element_justification='center')
-        botao, valores = window.read()
-        window.close()
-        return botao, valores
-
-    def tela_formulario(self, lista_especialidades, dados=None):
-        if dados is None:
-            dados = {'nome': '', 'telefone': '', 'cpf': '', 'especialidade': lista_especialidades[0] if lista_especialidades else '', 'registro': ''}
-            titulo = 'CADASTRAR PROFISSIONAL'
-        else:
-            titulo = 'ALTERAR PROFISSIONAL'
-
-        layout = [
-            [sg.Text(titulo, font=('Helvetica', 14, 'bold'))],
-            [sg.Text('Nome', size=(20, 1)), sg.Input(default_text=dados['nome'], key='nome', size=(30, 1))],
-            [sg.Text('Telefone', size=(20, 1)), sg.Input(default_text=dados['telefone'], key='telefone', size=(30, 1))],
-            [sg.Text('CPF', size=(20, 1)), sg.Input(default_text=dados['cpf'], key='cpf', size=(30, 1))],
-            [sg.Text('Especialidade', size=(20, 1)), sg.Combo(lista_especialidades, default_value=dados['especialidade'], key='especialidade', size=(28, 1), readonly=True)],
-            [sg.Text('Registro CRM', size=(20, 1)), sg.Input(default_text=dados['registro'], key='registro', size=(15, 1))],
-            [sg.Button('Confirmar'), sg.Button('Cancelar')]
-        ]
-        window = sg.Window(titulo, layout)
-        botao, valores = window.read()
-        window.close()
-        return botao, valores
-
-    def tela_listagem(self, dados):
-        if not dados:
-            self.mostra_mensagem('Aviso', 'Nenhum profissional cadastrado.')
-            return
-        colunas = ['Nome', 'Telefone', 'Especialidade', 'Registro']
-        tabela = [
-            [d['nome'], d['telefone'], d['especialidade'], d['registro']]
-            for d in dados
-        ]
-        layout = [
-            [sg.Text('PROFISSIONAIS CADASTRADOS', font=('Helvetica', 14, 'bold'))],
-            [sg.Table(values=tabela, headings=colunas, auto_size_columns=True, justification='left', key='tabela')],
-            [sg.Button('Voltar')]
-        ]
-        window = sg.Window('Listagem de Profissionais', layout)
-        window.read()
-        window.close()
+        button, values = self.__window.Read()
+        return button, values

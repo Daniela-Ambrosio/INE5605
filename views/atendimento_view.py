@@ -1,66 +1,111 @@
 import FreeSimpleGUI as sg
-from views.view_base import ViewBase
 
-class AtendimentoView(ViewBase):
+class AtendimentoView:
+    def __init__(self):
+        self.__window = None
+
+    def tela_opcoes(self):
+        self.init_opcoes()
+        button, values = self.open()
+        opcao = 0
+        if values:
+            if values.get("1"): opcao = 1
+            if values.get("2"): opcao = 2
+            if values.get("3"): opcao = 3
+            if values.get("4"): opcao = 4
+            if values.get("0") or button in (None, "Cancelar"): opcao = 0
+        self.close()
+        return opcao
+
+    def init_opcoes(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- ATENDIMENTOS ----------", font=("Helvetica", 25))],
+            [sg.Text("Escolha sua opção", font=("Helvetica", 15))],
+            [sg.Radio("Cadastrar Atendimento", "RD1", key="1")],
+            [sg.Radio("Alterar Atendimento", "RD1", key="2")],
+            [sg.Radio("Listar Atendimentos", "RD1", key="3")],
+            [sg.Radio("Excluir Atendimento", "RD1", key="4")],
+            [sg.Radio("Retornar", "RD1", key="0")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Sistema de Clínica Médica").Layout(layout)
+
+    def pega_dados_atendimento(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- DADOS ATENDIMENTO ----------", font=("Helvetica", 25))],
+            [sg.Text("Nome da Clínica:", size=(20, 1)), sg.InputText("", key="clinica")],
+            [sg.Text("CPF Paciente:", size=(20, 1)), sg.InputText("", key="paciente")],
+            [sg.Text("Nome do Profissional:", size=(20, 1)), sg.InputText("", key="profissional")],
+            [sg.Text("Data (DD/MM/AAAA):", size=(20, 1)), sg.InputText("", key="data")],
+            [sg.Text("Hora Início (HH:MM):", size=(20, 1)), sg.InputText("", key="inicio")],
+            [sg.Text("Hora Fim (HH:MM):", size=(20, 1)), sg.InputText("", key="fim")],
+            [sg.Text("Tipo:", size=(20, 1)), sg.Combo(['Consulta', 'Retorno', 'Exame', 'Procedimento'], readonly=True, key="tipo")],
+            [sg.Text("Custo:", size=(20, 1)), sg.InputText("", key="custo")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Cadastrar Atendimento").Layout(layout)
+        button, values = self.open()
+        
+        dados = None
+        if button == "Confirmar":
+            dados = {
+                "clinica": values["clinica"],
+                "paciente": values["paciente"],
+                "profissional": values["profissional"],
+                "data": values["data"],
+                "inicio": values["inicio"],
+                "fim": values["fim"],
+                "tipo": values["tipo"],
+                "custo": values["custo"]
+            }
+        self.close()
+        return dados
+
+    def mostra_atendimento(self, dados_atendimento):
+        string_todos = ""
+        for dado in dados_atendimento:
+            string_todos += "DATA: " + dado["data"] + "\n"
+            string_todos += "HORA INÍCIO: " + dado["inicio"] + "\n"
+            string_todos += "HORA FIM: " + dado["fim"] + "\n"
+            string_todos += "CLÍNICA: " + dado["clinica"] + "\n"
+            string_todos += "PACIENTE: " + dado["paciente"] + "\n"
+            string_todos += "PROFISSIONAL: " + dado["profissional"] + "\n"
+            string_todos += "TIPO: " + dado["tipo"] + "\n"
+            string_todos += "CUSTO: R$ " + dado["custo"] + "\n"
+            string_todos += "STATUS: " + dado["status"] + "\n\n"
+        
+        if not string_todos:
+            string_todos = "Nenhum atendimento cadastrado."
+        sg.Popup("-------- LISTA DE ATENDIMENTOS ----------", string_todos)
+
+    def seleciona_atendimento(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
+        layout = [
+            [sg.Text("-------- SELECIONAR ATENDIMENTO ----------", font=("Helvetica", 25))],
+            [sg.Text("Digite a data (DD/MM/AAAA) do atendimento:", font=("Helvetica", 15))],
+            [sg.Text("Data:", size=(15, 1)), sg.InputText("", key="data")],
+            [sg.Text("Digite a hora de início (HH:MM) do atendimento:", font=("Helvetica", 15))],
+            [sg.Text("Hora Início:", size=(15, 1)), sg.InputText("", key="inicio")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
+        ]
+        self.__window = sg.Window("Selecionar Atendimento").Layout(layout)
+        button, values = self.open()
+        
+        data, inicio = None, None
+        if button == "Confirmar":
+            data = values["data"]
+            inicio = values["inicio"]
+        self.close()
+        return data, inicio
+
+    def mostra_mensagem(self, msg):
+        sg.popup("", msg)
+
+    def close(self):
+        if self.__window: self.__window.Close()
+
     def open(self):
-        layout = [
-            [sg.Text('GERENCIAMENTO DE ATENDIMENTOS', font=('Helvetica', 16, 'bold'))],
-            [sg.Text('─' * 40)],
-            [sg.Button('Listar', size=(25, 1))],
-            [sg.Button('Cadastrar', size=(25, 1))],
-            [sg.Button('Alterar', size=(25, 1))],
-            [sg.Button('Excluir', size=(25, 1))],
-            [sg.Text('─' * 40)],
-            [sg.Button('Voltar', size=(25, 1))]
-        ]
-        window = sg.Window('Atendimentos', layout, element_justification='center')
-        botao, valores = window.read()
-        window.close()
-        return botao, valores
-
-    def tela_formulario(self, clinicas, pacientes, profissionais, tipos, dados=None):
-        if dados is None:
-            dados = {'clinica': clinicas[0] if clinicas else '',
-                     'paciente': pacientes[0] if pacientes else '',
-                     'profissional': profissionais[0] if profissionais else '',
-                     'data': '', 'inicio': '', 'fim': '',
-                     'tipo': tipos[0] if tipos else '', 'custo': ''}
-            titulo = 'CADASTRAR ATENDIMENTO'
-        else:
-            titulo = 'ALTERAR ATENDIMENTO'
-
-        layout = [
-            [sg.Text(titulo, font=('Helvetica', 14, 'bold'))],
-            [sg.Text('Clínica', size=(20, 1)), sg.Combo(clinicas, default_value=dados['clinica'], key='clinica', size=(28, 1), readonly=True)],
-            [sg.Text('Paciente', size=(20, 1)), sg.Combo(pacientes, default_value=dados['paciente'], key='paciente', size=(28, 1), readonly=True)],
-            [sg.Text('Profissional', size=(20, 1)), sg.Combo(profissionais, default_value=dados['profissional'], key='profissional', size=(28, 1), readonly=True)],
-            [sg.Text('Data (DD/MM/AAAA)', size=(20, 1)), sg.Input(default_text=dados['data'], key='data', size=(15, 1))],
-            [sg.Text('Hora Início (HH:MM)', size=(20, 1)), sg.Input(default_text=dados['inicio'], key='hora_inicio', size=(10, 1))],
-            [sg.Text('Hora Fim (HH:MM)', size=(20, 1)), sg.Input(default_text=dados['fim'], key='hora_fim', size=(10, 1))],
-            [sg.Text('Tipo', size=(20, 1)), sg.Combo(tipos, default_value=dados['tipo'], key='tipo', size=(15, 1), readonly=True)],
-            [sg.Text('Custo (R$)', size=(20, 1)), sg.Input(default_text=dados['custo'], key='custo', size=(15, 1))],
-            [sg.Button('Confirmar'), sg.Button('Cancelar')]
-        ]
-        window = sg.Window(titulo, layout)
-        botao, valores = window.read()
-        window.close()
-        return botao, valores
-
-    def tela_listagem(self, dados):
-        if not dados:
-            self.mostra_mensagem('Aviso', 'Nenhum atendimento agendado.')
-            return
-        colunas = ['Data', 'Início', 'Fim', 'Clínica', 'Paciente', 'Profissional', 'Tipo', 'Custo', 'Status']
-        tabela = [
-            [d['data'], d['inicio'], d['fim'], d['clinica'], d['paciente'],
-             d['profissional'], d['tipo'], d['custo'], d['status']]
-            for d in dados
-        ]
-        layout = [
-            [sg.Text('ATENDIMENTOS CADASTRADOS', font=('Helvetica', 14, 'bold'))],
-            [sg.Table(values=tabela, headings=colunas, auto_size_columns=True, justification='left', key='tabela')],
-            [sg.Button('Voltar')]
-        ]
-        window = sg.Window('Listagem de Atendimentos', layout)
-        window.read()
-        window.close()
+        button, values = self.__window.Read()
+        return button, values

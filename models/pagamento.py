@@ -6,42 +6,42 @@ from .parcela import Parcela
 
 class Pagamento(ABC):
     def __init__(self, data: date, custo: float, parcelado: bool = False):
-        self._data = data
-        self._custo = custo
-        self._parcelado = parcelado
-        self._parcelas: List[Parcela] = []
+        self.__data = data
+        self.__custo = custo
+        self.__parcelado = parcelado
+        self.__parcelas: List[Parcela] = []
 
     @property
     def data(self):
-        return self._data
+        return self.__data
  
     @data.setter
     def data(self, data):
-        self._data = data
+        self.__data = data
  
     @property
     def custo(self):
-        return self._custo
+        return self.__custo
  
     @custo.setter
     def custo(self, custo):
-        self._custo = custo
+        self.__custo = custo
  
     @property
     def parcelado(self):
-        return self._parcelado
+        return self.__parcelado
  
     @parcelado.setter
     def parcelado(self, parcelado: bool):
-        self._parcelado = parcelado
+        self.__parcelado = parcelado
  
     @property
     def parcelas(self):
-        return self._parcelas
+        return self.__parcelas
  
     def adicionar_parcela(self, numero, custo, vencimento, paga=False):
         nova_parcela = Parcela(numero, custo, vencimento, paga)
-        self._parcelas.append(nova_parcela)
+        self.__parcelas.append(nova_parcela)
     
     def obter_valor_pago(self):
         if not self.parcelado:
@@ -55,15 +55,15 @@ class Pagamento(ABC):
 class PIX(Pagamento):
     def __init__(self, data: date, custo: float, parcelado: bool, cpf: str):
         super().__init__(data, custo, parcelado)
-        self._cpf = cpf
+        self.__cpf = cpf
 
     @property
     def cpf(self):
-        return self._cpf
+        return self.__cpf
  
     @cpf.setter
     def cpf(self, cpf):
-        self._cpf = cpf
+        self.__cpf = cpf
 
 class Dinheiro(Pagamento):
     def __init__(self, data: date, custo: float, parcelado: bool):
@@ -72,21 +72,21 @@ class Dinheiro(Pagamento):
 class Cartao(Pagamento):
     def __init__(self, data: date, custo: float, parcelado: bool, numero: int, bandeira: str):
         super().__init__(data, custo, parcelado)
-        self._numero = numero
-        self._bandeira = bandeira
+        self.__numero = numero
+        self.__bandeira = bandeira
 
     @property
     def numero(self):
-        return self._numero
+        return self.__numero
  
     @numero.setter
     def numero(self, numero):
-        self._numero = numero
+        self.__numero = numero
  
     @property
     def bandeira(self):
-        return self._bandeira
+        return self.__bandeira
  
     @bandeira.setter
     def bandeira(self, bandeira):
-        self._bandeira = bandeira
+        self.__bandeira = bandeira

@@ -1,33 +1,48 @@
 import FreeSimpleGUI as sg
-from views.view_base import ViewBase
 
-class MenuView(ViewBase):
+class MenuView:
     def __init__(self):
         self.__window = None
-        self.init_components()
 
-    def init_components(self):
-        if self.__window is not None:
-            self.__window.close()
-            
+    def tela_opcoes(self):
+        self.init_opcoes()
+        button, values = self.open()
+        opcao = 0
+        if values:
+            if values.get("1"): opcao = 1
+            if values.get("2"): opcao = 2
+            if values.get("3"): opcao = 3
+            if values.get("4"): opcao = 4
+            if values.get("5"): opcao = 5
+            if values.get("6"): opcao = 6
+            if values.get("7"): opcao = 7
+            if values.get("0") or button in (None, "Cancelar"): opcao = 0
+        self.close()
+        return opcao
+
+    def init_opcoes(self):
+        sg.ChangeLookAndFeel("DarkTeal4")
         layout = [
-            [sg.Text('SISTEMA CLÍNICO', font=('Helvetica', 18, 'bold'), justification='center')],
-            [sg.Text('─' * 45)],
-            [sg.Button('Clínicas', size=(25, 2), font=('Helvetica', 12))],
-            [sg.Button('Pacientes', size=(25, 2), font=('Helvetica', 12))],
-            [sg.Button('Profissionais', size=(25, 2), font=('Helvetica', 12))],
-            [sg.Button('Atendimentos', size=(25, 2), font=('Helvetica', 12))],
-            [sg.Button('Procedimentos', size=(25, 2), font=('Helvetica', 12))],
-            [sg.Button('Pagamentos', size=(25, 2), font=('Helvetica', 12))],
-            [sg.Button('Relatórios', size=(25, 2), font=('Helvetica', 12))],
-            [sg.Text('─' * 45)],
-            [sg.Button('Sair', size=(15, 1), button_color=('white', 'red'))]
+            [sg.Text("-------- MENU PRINCIPAL ----------", font=("Helvetica", 25))],
+            [sg.Text("Escolha sua opção", font=("Helvetica", 15))],
+            [sg.Radio("Gerenciar Clínicas", "RD1", key="1")],
+            [sg.Radio("Gerenciar Pacientes", "RD1", key="2")],
+            [sg.Radio("Gerenciar Profissionais", "RD1", key="3")],
+            [sg.Radio("Gerenciar Atendimentos", "RD1", key="4")],
+            [sg.Radio("Gerenciar Procedimentos", "RD1", key="5")],
+            [sg.Radio("Gerenciar Pagamentos", "RD1", key="6")],
+            [sg.Radio("Relatórios", "RD1", key="7")],
+            [sg.Radio("Sair", "RD1", key="0")],
+            [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
         ]
-        
-        self.__window = sg.Window('Menu Principal', layout, element_justification='center', size=(400, 600))
+        self.__window = sg.Window("Sistema de Clínica Médica").Layout(layout)
+
+    def mostra_mensagem(self, msg):
+        sg.popup("", msg)
+
+    def close(self):
+        if self.__window: self.__window.Close()
 
     def open(self):
-        self.init_components()
-        botao, valores = self.__window.read()
-        self.__window.close()
-        return botao, valores
+        button, values = self.__window.Read()
+        return button, values
