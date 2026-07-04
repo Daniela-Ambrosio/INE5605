@@ -14,8 +14,12 @@ class TipoAtendimento(Enum):
     PROCEDIMENTO = "Procedimento"
 
 class Atendimento:
-    def __init__(self, clinica: Clinica, paciente: Paciente, profissional: ProfissionalSaude, data: date, inicio: time, fim: time, tipo: TipoAtendimento, custo: float):
-        self.clinica = clinica #chama a função setter ao invés de criar a variável
+    _proximo_codigo = 1
+
+    def __init__(self, clinica: Clinica, paciente: Paciente, profissional: ProfissionalSaude, data: date, inicio: time, fim: time, tipo: TipoAtendimento, custo: float, codigo: int = None):
+        #chama as funções setter ao invés de criar a variável e a criação das variáveis acontece nos setters
+        
+        self.clinica = clinica 
         self.paciente = paciente
         self.profissional = profissional
         self.data = data
@@ -25,13 +29,19 @@ class Atendimento:
         self.custo = custo
         self.__procedimentos: List[Procedimento] = []
         self.__pagamento = None
+        
+        if codigo is None:
+            self.codigo = Atendimento._proximo_codigo
+            Atendimento._proximo_codigo += 1
+        else:
+            self.codigo = codigo
 
     @property
     def clinica(self): return self.__clinica
     @clinica.setter
     def clinica(self, clinica): 
         if not isinstance(clinica, Clinica): raise TipoInvalidoException("Clínica inválida.")
-        self.__clinica = clinica #criação da variável
+        self.__clinica = clinica 
 
     @property
     def paciente(self): return self.__paciente
@@ -95,3 +105,10 @@ class Atendimento:
     def pagamento(self, pagamento):
         if pagamento is not None and not isinstance(pagamento, Pagamento): raise TipoInvalidoException("Pagamento inválido.")
         self.__pagamento = pagamento
+
+    @property
+    def codigo(self): return self.__codigo
+    @codigo.setter
+    def codigo(self, codigo):
+        if not isinstance(codigo, int): raise TipoInvalidoException("Código deve ser do tipo int.")
+        self.__codigo = codigo
