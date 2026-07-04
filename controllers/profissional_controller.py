@@ -1,14 +1,16 @@
 from models import ProfissionalSaude, Especialidade
 from .validacoes import validar_obrigatorios, RegraNegocioException
-from .context import Context
 from views.profissional_view import ProfissionalView
+from DAOs.profissional_dao import ProfissionalDAO
+from DAOs.atendimento_dao import AtendimentoDAO
+
 
 class ProfissionalController:
     def __init__(self, context):
-        self.__context = context
+        self.__profissional_DAO = ProfissionalDAO()
+        self.__atendimento_DAO = AtendimentoDAO
         self.__profissional_view = ProfissionalView()
 
-    # ==================== PROFISSIONAIS ====================
     def abrir_tela_profissional(self):
         while True:
             opcao = self.__profissional_view.tela_opcoes()
@@ -20,7 +22,7 @@ class ProfissionalController:
 
     def _listar_profissionais(self):
         dados = []
-        for p in self.__context.profissionais:
+        for p in self.__profissional_DAO.get_all():
             dados.append({
                 'nome': p.nome,
                 'telefone': p.telefone,
@@ -31,7 +33,7 @@ class ProfissionalController:
         self.__profissional_view.mostra_profissional(dados)
 
     def _buscar_profissional_por_cpf(self, cpf):
-        for p in self.__context.profissionais:
+        for p in self.__profissional_DAO.get_all():
             if p.cpf == cpf: return p
         return None
 
@@ -91,7 +93,7 @@ class ProfissionalController:
         if self._buscar_profissional_por_cpf(cpf):
             raise RegraNegocioException("CPF já cadastrado.")
         p = ProfissionalSaude(nome, telefone, cpf, especialidade, registro)
-        self.__context.profissionais.append(p)
+        self.__profissional_DAO.add(p)
         return p
 
     def alterar_profissional(self, profissional, nome, telefone, cpf, especialidade, registro):
@@ -102,7 +104,10 @@ class ProfissionalController:
         profissional.especialidade = especialidade
         profissional.registro = registro
 
+        self.__profissional_DAO.update(profissional)
+
     def excluir_profissional(self, profissional):
-        if any(at.profissional.cpf == profissional.cpf for at in self.__context.atendimentos):
+        if any(at.profissional.cpf == profissional.cpf for at in self.__atendimento_DAO.get_all()):
             raise RegraNegocioException("Profissional possui atendimentos agendados.")
-        if profissional in self.__context.profissionais: self.__context.profissionais.remove(profissional)
+
+        if profissional in self.__profissional_DAO.get_all(): self.__profissional_DAO.remove(profissional.cpf)

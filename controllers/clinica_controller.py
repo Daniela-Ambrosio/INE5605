@@ -2,10 +2,13 @@ from datetime import time, datetime
 from models import Clinica
 from .validacoes import validar_obrigatorios, RegraNegocioException
 from views.clinica_view import ClinicaView
+from DAOs.clinica_dao import ClinicaDAO
+from DAOs.atendimento_dao import AtendimentoDAO
 
 class ClinicaController:
     def __init__(self, context):
-        self.__context = context
+        self.__clinica_DAO = ClinicaDAO()
+        self.__atendimento_DAO = AtendimentoDAO()
         self.__clinica_view = ClinicaView()
 
     def abrir_tela(self):
@@ -23,9 +26,8 @@ class ClinicaController:
                 self._excluir_clinica()
 
     def _listar_clinicas(self):
-        clinicas = self.__context.clinicas
         dados = []
-        for c in clinicas:
+        for c in self.__clinica_DAO.get_all():
             dados.append({
                 'nome': c.nome,
                 'cidade': c.cidade,
@@ -45,13 +47,14 @@ class ClinicaController:
                     vals['nome'], vals['cidade'], vals['descricao'], ha, hf
                 )
                 self.__clinica_view.mostra_mensagem('Clínica cadastrada com sucesso!')
+
             except ValueError:
                 self.__clinica_view.mostra_mensagem('Erro: Formato de hora inválido! Use HH:MM.')
             except RegraNegocioException as e:
                 self.__clinica_view.mostra_mensagem(f'Erro: {str(e)}')
 
     def _buscar_clinica_por_nome(self, nome):
-        for c in self.__context.clinicas:
+        for c in self.__clinica_DAO.get_all():
             if c.nome == nome:
                 return c
         return None
@@ -75,6 +78,7 @@ class ClinicaController:
                         vals['descricao'], ha, hf
                     )
                     self.__clinica_view.mostra_mensagem('Clínica alterada com sucesso!')
+
                 except ValueError:
                     self.__clinica_view.mostra_mensagem('Erro: Formato de hora inválido! Use HH:MM.')
                 except RegraNegocioException as e:
@@ -91,6 +95,7 @@ class ClinicaController:
             try:
                 self.excluir_clinica(clinica)
                 self.__clinica_view.mostra_mensagem('Clínica excluída com sucesso!')
+
             except RegraNegocioException as e:
                 self.__clinica_view.mostra_mensagem(f'Erro: {str(e)}')
 
@@ -98,7 +103,7 @@ class ClinicaController:
                           hora_abertura: time, hora_fechamento: time) -> Clinica:
         validar_obrigatorios({"Nome": nome, "Cidade": cidade})
         clinica = Clinica(nome, cidade, descricao, hora_abertura, hora_fechamento)
-        if clinica not in self.__context.clinicas: self.__context.clinicas.append(clinica)
+        if clinica not in self.__clinica_DAO.get_all(): self.__clinica_DAO.add(clinica)
         return clinica
 
     def alterar_clinica(self, clinica: Clinica, nome: str, cidade: str, descricao: str, 
@@ -110,7 +115,10 @@ class ClinicaController:
         clinica.hora_abertura = hora_abertura
         clinica.hora_fechamento = hora_fechamento
 
+        self.__clinica_DAO.update(clinica)
+
     def excluir_clinica(self, clinica: Clinica):
-        if any(at.clinica.nome == clinica.nome for at in self.__context.atendimentos):
+        if any(at.clinica.nome == clinica.nome for at in self.__atendimento_DAO.get_all()):
             raise RegraNegocioException("Não é possível excluir esta clínica pois ela possui atendimentos agendados.")
-        if clinica in self.__context.clinicas: self.__context.clinicas.remove(clinica)
+            
+        if clinica in self.__clinica_DAO.get_all(): self.__clinica_DAO.remove(clinica.nome)

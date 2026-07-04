@@ -1,15 +1,16 @@
 from datetime import date, datetime
 from models import Paciente
 from .validacoes import validar_obrigatorios, RegraNegocioException
-from .context import Context
 from views.paciente_view import PacienteView
+from DAOs.paciente_dao import PacienteDAO
+from DAOs.atendimento_dao import AtendimentoDAO
 
 class PacienteController:
     def __init__(self, context):
-        self.__context = context
+        self.__paciente_DAO = PacienteDAO()
+        self.__atendimento_DAO = AtendimentoDAO
         self.__paciente_view = PacienteView()
 
-    # ==================== PACIENTES ====================
     def abrir_tela_paciente(self):
         while True:
             opcao = self.__paciente_view.tela_opcoes()
@@ -21,7 +22,7 @@ class PacienteController:
 
     def _listar_pacientes(self):
         dados = []
-        for p in self.__context.pacientes:
+        for p in self.__paciente_DAO.get_all():
             dados.append({
                 'nome': p.nome,
                 'telefone': p.telefone,
@@ -30,7 +31,7 @@ class PacienteController:
         self.__paciente_view.mostra_paciente(dados)
 
     def _buscar_paciente_por_cpf(self, cpf):
-        for p in self.__context.pacientes:
+        for p in self.__paciente_DAO.get_all():
             if p.cpf == cpf: return p
         return None
 
@@ -60,6 +61,7 @@ class PacienteController:
                     dt_nasc = datetime.strptime(vals['data_nascimento'], '%d/%m/%Y').date()
                     self.alterar_paciente(paciente, vals['nome'], vals['telefone'], vals['cpf'], dt_nasc)
                     self.__paciente_view.mostra_mensagem('Paciente alterado!')
+
                 except ValueError:
                     self.__paciente_view.mostra_mensagem('Erro na data.')
                 except RegraNegocioException as e:
@@ -84,7 +86,7 @@ class PacienteController:
         if self._buscar_paciente_por_cpf(cpf):
             raise RegraNegocioException("CPF já cadastrado.")
         p = Paciente(nome, telefone, cpf, data_nascimento)
-        self.__context.pacientes.append(p)
+        self.__paciente_DAO.add(p)
         return p
 
     def alterar_paciente(self, paciente, nome, telefone, cpf, data_nascimento):
@@ -94,9 +96,12 @@ class PacienteController:
         paciente.cpf = cpf
         paciente.data_nascimento = data_nascimento
 
+        self.__paciente_DAO.update(paciente)
+
     def excluir_paciente(self, paciente):
-        if any(at.paciente.cpf == paciente.cpf for at in self.__context.atendimentos):
+        if any(at.paciente.cpf == paciente.cpf for at in self.__atendimento_DAO.get_all()):
             raise RegraNegocioException("Paciente possui atendimentos e não pode ser excluído.")
-        if paciente in self.__context.pacientes: self.__context.pacientes.remove(paciente)
+
+        if paciente in self.__paciente_DAO.get_all(): self.__paciente_DAO.remove(paciente.cpf)
 
     
