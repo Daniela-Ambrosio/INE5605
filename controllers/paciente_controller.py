@@ -5,21 +5,21 @@ from views import PacienteView
 from DAOs import PacienteDAO, AtendimentoDAO
 
 class PacienteController:
-    def __init__(self, context):
+    def __init__(self):
         self.__paciente_DAO = PacienteDAO()
-        self.__atendimento_DAO = AtendimentoDAO
+        self.__atendimento_DAO = AtendimentoDAO()
         self.__paciente_view = PacienteView()
 
     def abrir_tela_paciente(self):
         while True:
             opcao = self.__paciente_view.tela_opcoes()
             if opcao == 0: break
-            elif opcao == 1: self._cadastrar_paciente()
-            elif opcao == 2: self._alterar_paciente()
-            elif opcao == 3: self._listar_pacientes()
-            elif opcao == 4: self._excluir_paciente()
+            elif opcao == 1: self.tela_cadastrar_paciente()
+            elif opcao == 2: self.tela_alterar_paciente()
+            elif opcao == 3: self.listar_pacientes()
+            elif opcao == 4: self.tela_excluir_paciente()
 
-    def _listar_pacientes(self):
+    def listar_pacientes(self):
         dados = []
         for p in self.__paciente_DAO.get_all():
             dados.append({
@@ -29,12 +29,12 @@ class PacienteController:
             })
         self.__paciente_view.mostra_paciente(dados)
 
-    def _buscar_paciente_por_cpf(self, cpf):
+    def buscar_paciente_por_cpf(self, cpf):
         for p in self.__paciente_DAO.get_all():
             if p.cpf == cpf: return p
         return None
 
-    def _cadastrar_paciente(self):
+    def tela_cadastrar_paciente(self):
         vals = self.__paciente_view.pega_dados_paciente()
         if vals:
             try:
@@ -46,11 +46,11 @@ class PacienteController:
             except RegraNegocioException as e:
                 self.__paciente_view.mostra_mensagem(str(e))
 
-    def _alterar_paciente(self):
-        self._listar_pacientes()
+    def tela_alterar_paciente(self):
+        self.listar_pacientes()
         cpf = self.__paciente_view.seleciona_paciente()
         if cpf:
-            paciente = self._buscar_paciente_por_cpf(cpf)
+            paciente = self.buscar_paciente_por_cpf(cpf)
             if not paciente:
                 self.__paciente_view.mostra_mensagem('Paciente não encontrado.')
                 return
@@ -66,11 +66,11 @@ class PacienteController:
                 except RegraNegocioException as e:
                     self.__paciente_view.mostra_mensagem(str(e))
 
-    def _excluir_paciente(self):
-        self._listar_pacientes()
+    def tela_excluir_paciente(self):
+        self.listar_pacientes()
         cpf = self.__paciente_view.seleciona_paciente()
         if cpf:
-            paciente = self._buscar_paciente_por_cpf(cpf)
+            paciente = self.buscar_paciente_por_cpf(cpf)
             if not paciente:
                 self.__paciente_view.mostra_mensagem('Paciente não encontrado.')
                 return
@@ -81,7 +81,7 @@ class PacienteController:
                 self.__paciente_view.mostra_mensagem(str(e))
 
     def cadastrar_paciente(self, nome, telefone, cpf, data_nascimento):
-        if self._buscar_paciente_por_cpf(cpf):
+        if self.buscar_paciente_por_cpf(cpf):
             raise RegraNegocioException("CPF já cadastrado.")
         p = Paciente(nome, telefone, cpf, data_nascimento)
         self.__paciente_DAO.add(p)

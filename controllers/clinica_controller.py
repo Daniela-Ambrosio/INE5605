@@ -5,7 +5,7 @@ from views.clinica_view import ClinicaView
 from DAOs import ClinicaDAO, AtendimentoDAO
 
 class ClinicaController:
-    def __init__(self, context):
+    def __init__(self):
         self.__clinica_DAO = ClinicaDAO()
         self.__atendimento_DAO = AtendimentoDAO()
         self.__clinica_view = ClinicaView()
@@ -16,15 +16,15 @@ class ClinicaController:
             if opcao == 0:
                 break
             elif opcao == 1:
-                self._cadastrar_clinica()
+                self.tela_cadastrar_clinica()
             elif opcao == 2:
-                self._alterar_clinica()
+                self.tela_alterar_clinica()
             elif opcao == 3:
-                self._listar_clinicas()
+                self.listar_clinicas()
             elif opcao == 4:
-                self._excluir_clinica()
+                self.tela_excluir_clinica()
 
-    def _listar_clinicas(self):
+    def listar_clinicas(self):
         dados = []
         for c in self.__clinica_DAO.get_all():
             dados.append({
@@ -36,7 +36,7 @@ class ClinicaController:
             })
         self.__clinica_view.mostra_clinica(dados)
 
-    def _cadastrar_clinica(self):
+    def tela_cadastrar_clinica(self):
         vals = self.__clinica_view.pega_dados_clinica()
         if vals:
             try:
@@ -52,17 +52,17 @@ class ClinicaController:
             except RegraNegocioException as e:
                 self.__clinica_view.mostra_mensagem(f'Erro: {str(e)}')
 
-    def _buscar_clinica_por_nome(self, nome):
+    def buscar_clinica_por_nome(self, nome):
         for c in self.__clinica_DAO.get_all():
             if c.nome == nome:
                 return c
         return None
 
-    def _alterar_clinica(self):
-        self._listar_clinicas()
+    def tela_alterar_clinica(self):
+        self.listar_clinicas()
         nome = self.__clinica_view.seleciona_clinica()
         if nome:
-            clinica = self._buscar_clinica_por_nome(nome)
+            clinica = self.buscar_clinica_por_nome(nome)
             if not clinica:
                 self.__clinica_view.mostra_mensagem('Clínica não encontrada.')
                 return
@@ -83,11 +83,11 @@ class ClinicaController:
                 except RegraNegocioException as e:
                     self.__clinica_view.mostra_mensagem(f'Erro: {str(e)}')
 
-    def _excluir_clinica(self):
-        self._listar_clinicas()
+    def tela_excluir_clinica(self):
+        self.listar_clinicas()
         nome = self.__clinica_view.seleciona_clinica()
         if nome:
-            clinica = self._buscar_clinica_por_nome(nome)
+            clinica = self.buscar_clinica_por_nome(nome)
             if not clinica:
                 self.__clinica_view.mostra_mensagem('Clínica não encontrada.')
                 return

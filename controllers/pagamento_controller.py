@@ -5,7 +5,7 @@ from views import PagamentoView, AtendimentoView
 from DAOs import PagamentoDAO
 
 class PagamentoController:
-    def __init__(self, context):
+    def __init__(self):
         self.__pagamento_DAO = PagamentoDAO()
         self.pagamento_view = PagamentoView()
         self.atendimento_view = AtendimentoView()
@@ -14,11 +14,11 @@ class PagamentoController:
         while True:
             opcao = self.pagamento_view.tela_opcoes()
             if opcao == 0: break
-            elif opcao == 1: self._realizar_pagamento()
-            elif opcao == 2: self._pagar_parcela()
-            elif opcao == 3: self._listar_extrato()
+            elif opcao == 1: self.tela_realizar_pagamento()
+            elif opcao == 2: self.tela_pagar_parcela()
+            elif opcao == 3: self.listar_extrato()
             
-    def _selecionar_atendimento(self):
+    def selecionar_atendimento(self):
         lista_atendimentos = [f"{at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')} - Paciente: {at.paciente.nome}" for at in self.__pagamento_DAO.get_all()]
         if not lista_atendimentos:
             self.pagamento_view.mostra_mensagem("Nenhum atendimento cadastrado.")
@@ -32,8 +32,8 @@ class PagamentoController:
                     return at
         return None
 
-    def _realizar_pagamento(self):
-        at = self._selecionar_atendimento()
+    def tela_realizar_pagamento(self):
+        at = self.selecionar_atendimento()
         if not at: return
         if at.pagamento:
             self.pagamento_view.mostra_mensagem("Este atendimento já possui pagamento registrado.")
@@ -74,8 +74,8 @@ class PagamentoController:
             except Exception as e:
                 self.pagamento_view.mostra_mensagem(f"Erro: {e}")
 
-    def _pagar_parcela(self):
-        at = self._selecionar_atendimento()
+    def tela_pagar_parcela(self):
+        at = self.selecionar_atendimento()
         if not at: return
         if not at.pagamento or not at.pagamento.parcelado:
             self.pagamento_view.mostra_mensagem("Atendimento não possui parcelas pendentes.")
@@ -97,8 +97,8 @@ class PagamentoController:
             except ValueError:
                 self.pagamento_view.mostra_mensagem("Número inválido.")
 
-    def _listar_extrato(self):
-        at = self._selecionar_atendimento()
+    def listar_extrato(self):
+        at = self.selecionar_atendimento()
         if not at: return
         
         extrato = f"Atendimento: {at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')}\n"

@@ -6,7 +6,7 @@ from DAOs import AtendimentoDAO, ProfissionalDAO, ClinicaDAO, PacienteDAO
 
 
 class AtendimentoController:
-    def __init__(self, context):
+    def __init__(self):
         self.__atendimento_DAO = AtendimentoDAO()
         self.__clinica_DAO = ClinicaDAO()
         self.__paciente_DAO = PacienteDAO()
@@ -17,12 +17,12 @@ class AtendimentoController:
         while True:
             opcao = self.__atendimento_view.tela_opcoes()
             if opcao == 0: break
-            elif opcao == 1: self._cadastrar_atendimento()
-            elif opcao == 2: self._alterar_atendimento()
-            elif opcao == 3: self._listar_atendimentos()
-            elif opcao == 4: self._excluir_atendimento()
+            elif opcao == 1: self.tela_cadastrar_atendimento()
+            elif opcao == 2: self.tela_alterar_atendimento()
+            elif opcao == 3: self.listar_atendimentos()
+            elif opcao == 4: self.tela_excluir_atendimento()
 
-    def _listar_atendimentos(self):
+    def listar_atendimentos(self):
         dados = []
         for at in self.__atendimento_DAO.get_all():
             pago = 'Pago' if at.pagamento else 'Pendente'
@@ -40,42 +40,42 @@ class AtendimentoController:
             })
         self.__atendimento_view.mostra_atendimento(dados)
 
-    def _buscar_atendimento(self, dt, ini):
+    def buscar_atendimento(self, dt, ini):
         for at in self.__atendimento_DAO.get_all():
             if at.data.strftime('%d/%m/%Y') == dt and at.inicio.strftime('%H:%M') == ini:
                 return at
         return None
 
-    def _buscar_clinica(self, nome):
-        for c in self.__clinica_DAO:
+    def buscar_clinica(self, nome):
+        for c in self.__clinica_DAO.get_all():
             if c.nome == nome: return c
         return None
 
-    def _buscar_paciente(self, cpf):
-        for p in self.__paciente_DAO:
+    def buscar_paciente(self, cpf):
+        for p in self.__paciente_DAO.get_all():
             if p.cpf == cpf: return p
         return None
 
-    def _buscar_profissional(self, nome):
-        for p in self.__profissional_DAO:
+    def buscar_profissional(self, nome):
+        for p in self.__profissional_DAO.get_all():
             if p.nome == nome: return p
         return None
 
-    def _cadastrar_atendimento(self):
-        nomes_clinicas = [c.nome for c in self.__clinica_DAO]
-        cpfs_pacientes = [p.cpf for p in self.__paciente_DAO]
-        nomes_profissionais = [p.nome for p in self.__profissional_DAO]
+    def tela_cadastrar_atendimento(self):
+        nomes_clinicas = [c.nome for c in self.__clinica_DAO.get_all()]
+        cpfs_pacientes = [p.cpf for p in self.__paciente_DAO.get_all()]
+        nomes_profissionais = [p.nome for p in self.__profissional_DAO.get_all()]
         
         vals = self.__atendimento_view.pega_dados_atendimento(nomes_clinicas, cpfs_pacientes, nomes_profissionais)
         if vals:
             try:
                 clinica = None
-                for c in self.__clinica_DAO:
+                for c in self.__clinica_DAO.get_all():
                     if c.nome == vals['clinica']: clinica = c
                 if not clinica: raise ValueError("Opção de clínica inválida.")
 
-                pa = self._buscar_paciente(vals['paciente'])
-                pr = self._buscar_profissional(vals['profissional'])
+                pa = self.buscar_paciente(vals['paciente'])
+                pr = self.buscar_profissional(vals['profissional'])
                 if not clinica: raise ValueError("Clínica não encontrada.")
                 if not pa: raise ValueError("Paciente não encontrado.")
                 if not pr: raise ValueError("Profissional não encontrado.")
@@ -97,8 +97,8 @@ class AtendimentoController:
             except RegraNegocioException as e:
                 self.__atendimento_view.mostra_mensagem(str(e))
 
-    def _alterar_atendimento(self):
-        self._listar_atendimentos()
+    def tela_alterar_atendimento(self):
+        self.listar_atendimentos()
         lista = [f"{a.data.strftime('%d/%m/%Y')} às {a.inicio.strftime('%H:%M')} - Paciente: {a.paciente.nome}" for a in self.__atendimento_DAO.get_all()]
         escolha = self.__atendimento_view.seleciona_atendimento(lista)
         if escolha:
@@ -108,20 +108,20 @@ class AtendimentoController:
                     at = a
                     break
                 
-            nomes_clinicas = [c.nome for c in self.__clinica_DAO]
-            cpfs_pacientes = [p.cpf for p in self.__paciente_DAO]
-            nomes_profissionais = [p.nome for p in self.__profissional_DAO]
+            nomes_clinicas = [c.nome for c in self.__clinica_DAO.get_all()]
+            cpfs_pacientes = [p.cpf for p in self.__paciente_DAO.get_all()]
+            nomes_profissionais = [p.nome for p in self.__profissional_DAO.get_all()]
             
             vals = self.__atendimento_view.pega_dados_atendimento(nomes_clinicas, cpfs_pacientes, nomes_profissionais)
             if vals:
                 try:
                     clinica = None
-                    for c in self.__clinica_DAO:
+                    for c in self.__clinica_DAO.get_all():
                         if c.nome == vals['clinica']: clinica = c
                     if not clinica: raise ValueError("Opção de clínica inválida.")
                     
-                    pa = self._buscar_paciente(vals['paciente'])
-                    pr = self._buscar_profissional(vals['profissional'])
+                    pa = self.buscar_paciente(vals['paciente'])
+                    pr = self.buscar_profissional(vals['profissional'])
                     if not clinica: raise ValueError("Clínica não encontrada.")
                     if not pa: raise ValueError("Paciente não encontrado.")
                     if not pr: raise ValueError("Profissional não encontrado.")
@@ -143,8 +143,8 @@ class AtendimentoController:
                     self.__atendimento_view.mostra_mensagem(f'Erro: {e}')
             
 
-    def _excluir_atendimento(self):
-        self._listar_atendimentos()
+    def tela_excluir_atendimento(self):
+        self.listar_atendimentos()
         lista = [f"{a.data.strftime('%d/%m/%Y')} às {a.inicio.strftime('%H:%M')} - Paciente: {a.paciente.nome}" for a in self.__atendimento_DAO.get_all()]
         escolha = self.__atendimento_view.seleciona_atendimento(lista)
         if escolha:

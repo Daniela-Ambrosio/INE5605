@@ -13,23 +13,23 @@ class ProcedimentoController:
         while True:
             opcao = self.__procedimento_view.tela_opcoes()
             if opcao == 0: break
-            elif opcao == 1: self._cadastrar_procedimento()
-            elif opcao == 2: self._alterar_procedimento()
-            elif opcao == 3: self._listar_procedimentos()
-            elif opcao == 4: self._excluir_procedimento()
+            elif opcao == 1: self.tela_cadastrar_procedimento()
+            elif opcao == 2: self.tela_alterar_procedimento()
+            elif opcao == 3: self.listar_procedimentos()
+            elif opcao == 4: self.tela_excluir_procedimento()
 
-    def _buscar_atendimento(self, dt, ini):
+    def buscar_atendimento(self, dt, ini):
         for at in self.__procedimento_DAO.get_all():
             if at.data.strftime('%d/%m/%Y') == dt and at.inicio.strftime('%H:%M') == ini:
                 return at
         return None
 
-    def _buscar_profissional(self, nome):
+    def buscar_profissional(self, nome):
         for p in self.__profissional_DAO.get_all():
             if p.nome == nome: return p
         return None
 
-    def _selecionar_atendimento_para_procedimento(self):
+    def selecionar_atendimento_para_procedimento(self):
         lista = [f"{a.data.strftime('%d/%m/%Y')} às {a.inicio.strftime('%H:%M')} - Paciente: {a.paciente.nome}" for a in self.__procedimento_DAO.get_all()]
         escolha = self.__atendimento_view.seleciona_atendimento(lista)
         if escolha: 
@@ -38,8 +38,8 @@ class ProcedimentoController:
                     return at
         return None
 
-    def _listar_procedimentos(self):
-        at = self._selecionar_atendimento_para_procedimento()
+    def listar_procedimentos(self):
+        at = self.selecionar_atendimento_para_procedimento()
         if at:
             dados = []
             for proc in at.procedimentos:
@@ -50,15 +50,15 @@ class ProcedimentoController:
                 })
             self.__procedimento_view.mostra_procedimento(dados)
 
-    def _cadastrar_procedimento(self):
-        at = self._selecionar_atendimento_para_procedimento()
+    def tela_cadastrar_procedimento(self):
+        at = self.selecionar_atendimento_para_procedimento()
         if not at: return
         
         nomes_profissionais = [p.nome for p in self.__profissional_DAO.get_all()]
         vals = self.__procedimento_view.pega_dados_procedimento(nomes_profissionais)
         if vals:
             try:
-                pr = self._buscar_profissional(vals['profissional'])
+                pr = self.buscar_profissional(vals['profissional'])
                 if not pr: raise ValueError("Profissional não encontrado.")
                 custo = float(vals['custo'])
                 self.adicionar_procedimento_a_atendimento(at, vals['descricao'], custo, pr)
@@ -66,8 +66,8 @@ class ProcedimentoController:
             except Exception as e:
                 self.__procedimento_view.mostra_mensagem(f'Erro: {e}')
 
-    def _alterar_procedimento(self):
-        at = self._selecionar_atendimento_para_procedimento()
+    def tela_alterar_procedimento(self):
+        at = self.selecionar_atendimento_para_procedimento()
         if not at: return
         
         descricoes = [p.descricao for p in at.procedimentos]
@@ -82,12 +82,12 @@ class ProcedimentoController:
         if not proc_target:
             self.__procedimento_view.mostra_mensagem("Não encontrado.")
             return
-
+ 
         nomes_profissionais = [p.nome for p in self.__profissional_DAO.get_all()]
         vals = self.__procedimento_view.pega_dados_procedimento(nomes_profissionais)
         if vals:
             try:
-                pr = self._buscar_profissional(vals['profissional'])
+                pr = self.buscar_profissional(vals['profissional'])
                 if not pr: raise ValueError("Profissional não encontrado.")
                 custo = float(vals['custo'])
                 self.alterar_procedimento(at, proc_target, vals['descricao'], custo, pr)
@@ -95,8 +95,8 @@ class ProcedimentoController:
             except Exception as e:
                 self.__procedimento_view.mostra_mensagem(f'Erro: {e}')
 
-    def _excluir_procedimento(self):
-        at = self._selecionar_atendimento_para_procedimento()
+    def tela_excluir_procedimento(self):
+        at = self.selecionar_atendimento_para_procedimento()
         if not at: return
         descricoes = [p.descricao for p in at.procedimentos]
         if not descricoes:

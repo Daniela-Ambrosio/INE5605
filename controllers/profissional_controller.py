@@ -5,21 +5,21 @@ from DAOs import ProfissionalDAO, AtendimentoDAO
 
 
 class ProfissionalController:
-    def __init__(self, context):
+    def __init__(self):
         self.__profissional_DAO = ProfissionalDAO()
-        self.__atendimento_DAO = AtendimentoDAO
+        self.__atendimento_DAO = AtendimentoDAO()
         self.__profissional_view = ProfissionalView()
 
     def abrir_tela_profissional(self):
         while True:
             opcao = self.__profissional_view.tela_opcoes()
             if opcao == 0: break
-            elif opcao == 1: self._cadastrar_profissional()
-            elif opcao == 2: self._alterar_profissional()
-            elif opcao == 3: self._listar_profissionais()
-            elif opcao == 4: self._excluir_profissional()
+            elif opcao == 1: self.tela_cadastrar_profissional()
+            elif opcao == 2: self.tela_alterar_profissional()
+            elif opcao == 3: self.listar_profissionais()
+            elif opcao == 4: self.tela_excluir_profissional()
 
-    def _listar_profissionais(self):
+    def listar_profissionais(self):
         dados = []
         for p in self.__profissional_DAO.get_all():
             dados.append({
@@ -31,12 +31,12 @@ class ProfissionalController:
             })
         self.__profissional_view.mostra_profissional(dados)
 
-    def _buscar_profissional_por_cpf(self, cpf):
+    def buscar_profissional_por_cpf(self, cpf):
         for p in self.__profissional_DAO.get_all():
             if p.cpf == cpf: return p
         return None
 
-    def _cadastrar_profissional(self):
+    def tela_cadastrar_profissional(self):
         vals = self.__profissional_view.pega_dados_profissional()
         if vals:
             try:
@@ -51,12 +51,12 @@ class ProfissionalController:
             except RegraNegocioException as e:
                 self.__profissional_view.mostra_mensagem(str(e))
 
-    def _alterar_profissional(self):
-        self._listar_profissionais()
+    def tela_alterar_profissional(self):
+        self.listar_profissionais()
         cpf = self.__profissional_view.seleciona_profissional()
         if cpf:
-            profissional = self._buscar_profissional_por_cpf(cpf)
-            if not profissional:
+            profissional = self.buscar_profissional_por_cpf(cpf)
+            if not profesional:
                 self.__profissional_view.mostra_mensagem('Profissional não encontrado.')
                 return
             vals = self.__profissional_view.pega_dados_profissional()
@@ -73,11 +73,11 @@ class ProfissionalController:
                 except RegraNegocioException as e:
                     self.__profissional_view.mostra_mensagem(str(e))
 
-    def _excluir_profissional(self):
-        self._listar_profissionais()
+    def tela_excluir_profissional(self):
+        self.listar_profissionais()
         cpf = self.__profissional_view.seleciona_profissional()
         if cpf:
-            profissional = self._buscar_profissional_por_cpf(cpf)
+            profissional = self.buscar_profissional_por_cpf(cpf)
             if not profissional:
                 self.__profissional_view.mostra_mensagem('Profissional não encontrado.')
                 return
@@ -88,7 +88,7 @@ class ProfissionalController:
                 self.__profissional_view.mostra_mensagem(str(e))
 
     def cadastrar_profissional(self, nome, telefone, cpf, especialidade, registro):
-        if self._buscar_profissional_por_cpf(cpf):
+        if self.buscar_profissional_por_cpf(cpf):
             raise RegraNegocioException("CPF já cadastrado.")
         p = ProfissionalSaude(nome, telefone, cpf, especialidade, registro)
         self.__profissional_DAO.add(p)

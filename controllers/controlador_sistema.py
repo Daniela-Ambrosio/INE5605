@@ -10,12 +10,12 @@ from controllers.relatorios_controller import RelatoriosController
 class ControladorSistema:
     def __init__(self):
         self.__menu_view = MenuView()
-        self.__clinica_controller = ClinicaController(None)
-        self.__paciente_controller = PacienteController(None)
-        self.__profissional_controller = ProfissionalController(None)
-        self.__atendimento_controller = AtendimentoController(None)
+        self.__clinica_controller = ClinicaController()
+        self.__paciente_controller = PacienteController()
+        self.__profissional_controller = ProfissionalController()
+        self.__atendimento_controller = AtendimentoController()
         self.__procedimento_controller = ProcedimentoController()
-        self.__pagamento_controller = PagamentoController(None)
+        self.__pagamento_controller = PagamentoController()
         self.__relatorios_controller = RelatoriosController()
 
     def iniciar(self):
