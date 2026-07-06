@@ -6,19 +6,17 @@ from controllers.atendimento_controller import AtendimentoController
 from controllers.procedimento_controller import ProcedimentoController
 from controllers.pagamento_controller import PagamentoController
 from controllers.relatorios_controller import RelatoriosController
-from controllers.context import Context
 
 class ControladorSistema:
     def __init__(self):
-        self.context = Context()
         self.__menu_view = MenuView()
-        self.__clinica_controller = ClinicaController(self.context)
-        self.__paciente_controller = PacienteController(self.context)
-        self.__profissional_controller = ProfissionalController(self.context)
-        self.__atendimento_controller = AtendimentoController(self.context)
-        self.__procedimento_controller = ProcedimentoController(self.context)
-        self.__pagamento_controller = PagamentoController(self.context)
-        self.__relatorios_controller = RelatoriosController(self.context)
+        self.__clinica_controller = ClinicaController(None)
+        self.__paciente_controller = PacienteController(None)
+        self.__profissional_controller = ProfissionalController(None)
+        self.__atendimento_controller = AtendimentoController(None)
+        self.__procedimento_controller = ProcedimentoController()
+        self.__pagamento_controller = PagamentoController(None)
+        self.__relatorios_controller = RelatoriosController()
 
     def iniciar(self):
         while True:

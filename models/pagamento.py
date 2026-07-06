@@ -5,12 +5,20 @@ from .parcela import Parcela
 from .exceptions import TipoInvalidoException, ValorVazioException
 
 class Pagamento(ABC):
-    def __init__(self, data: date, custo: float, parcelado: bool = False):
+    _proximo_codigo = 1
+
+    def __init__(self, data: date, custo: float, parcelado: bool = False, codigo: int = None):
         self.data = data
         self.custo = custo
         self.parcelado = parcelado
         self.__parcelas: List[Parcela] = []
 
+        if codigo is None:
+            self.codigo = Pagamento._proximo_codigo
+            Pagamento._proximo_codigo += 1
+        else:
+            self.codigo = codigo
+            
     @property
     def data(self): return self.__data
     @data.setter
@@ -34,6 +42,14 @@ class Pagamento(ABC):
 
     @property
     def parcelas(self): return self.__parcelas
+
+    @property
+    def codigo(self): return self.__codigo
+    @codigo.setter
+    def codigo(self, codigo):
+        if not isinstance(codigo, int): raise TipoInvalidoException("Código deve ser do tipo int.")
+        self.__codigo = codigo
+
     
     def adicionar_parcela(self, numero, custo, vencimento, paga=False):
         nova_parcela = Parcela(numero, custo, vencimento, paga)

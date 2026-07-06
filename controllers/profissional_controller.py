@@ -1,8 +1,7 @@
 from models import ProfissionalSaude, Especialidade
-from .validacoes import validar_obrigatorios, RegraNegocioException
-from views.profissional_view import ProfissionalView
-from DAOs.profissional_dao import ProfissionalDAO
-from DAOs.atendimento_dao import AtendimentoDAO
+from .validacoes import RegraNegocioException
+from views import ProfissionalView
+from DAOs import ProfissionalDAO, AtendimentoDAO
 
 
 class ProfissionalController:
@@ -89,7 +88,6 @@ class ProfissionalController:
                 self.__profissional_view.mostra_mensagem(str(e))
 
     def cadastrar_profissional(self, nome, telefone, cpf, especialidade, registro):
-        validar_obrigatorios({"Nome": nome, "CPF": cpf})
         if self._buscar_profissional_por_cpf(cpf):
             raise RegraNegocioException("CPF já cadastrado.")
         p = ProfissionalSaude(nome, telefone, cpf, especialidade, registro)
@@ -97,7 +95,6 @@ class ProfissionalController:
         return p
 
     def alterar_profissional(self, profissional, nome, telefone, cpf, especialidade, registro):
-        validar_obrigatorios({"Nome": nome, "CPF": cpf})
         profissional.nome = nome
         profissional.telefone = telefone
         profissional.cpf = cpf

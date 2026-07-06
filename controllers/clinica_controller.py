@@ -1,9 +1,8 @@
 from datetime import time, datetime
 from models import Clinica
-from .validacoes import validar_obrigatorios, RegraNegocioException
+from .validacoes import RegraNegocioException
 from views.clinica_view import ClinicaView
-from DAOs.clinica_dao import ClinicaDAO
-from DAOs.atendimento_dao import AtendimentoDAO
+from DAOs import ClinicaDAO, AtendimentoDAO
 
 class ClinicaController:
     def __init__(self, context):
@@ -101,14 +100,12 @@ class ClinicaController:
 
     def cadastrar_clinica(self, nome: str, cidade: str, descricao: str, 
                           hora_abertura: time, hora_fechamento: time) -> Clinica:
-        validar_obrigatorios({"Nome": nome, "Cidade": cidade})
         clinica = Clinica(nome, cidade, descricao, hora_abertura, hora_fechamento)
         if clinica not in self.__clinica_DAO.get_all(): self.__clinica_DAO.add(clinica)
         return clinica
 
     def alterar_clinica(self, clinica: Clinica, nome: str, cidade: str, descricao: str, 
                         hora_abertura: time, hora_fechamento: time):
-        validar_obrigatorios({"Nome": nome, "Cidade": cidade})
         clinica.nome = nome
         clinica.cidade = cidade
         clinica.descricao = descricao

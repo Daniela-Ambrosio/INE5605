@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta, date
 from models import PIX, Cartao, Dinheiro
 from .validacoes import RegraNegocioException
-from views.pagamento_view import PagamentoView
-from views.atendimento_view import AtendimentoView
+from views import PagamentoView, AtendimentoView
+from DAOs import PagamentoDAO
 
 class PagamentoController:
     def __init__(self, context):
-        self.context = context
+        self.__pagamento_DAO = PagamentoDAO()
         self.pagamento_view = PagamentoView()
         self.atendimento_view = AtendimentoView()
 
@@ -19,14 +19,14 @@ class PagamentoController:
             elif opcao == 3: self._listar_extrato()
             
     def _selecionar_atendimento(self):
-        lista_atendimentos = [f"{at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')} - Paciente: {at.paciente.nome}" for at in self.context.atendimentos]
+        lista_atendimentos = [f"{at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')} - Paciente: {at.paciente.nome}" for at in self.__pagamento_DAO.get_all()]
         if not lista_atendimentos:
             self.pagamento_view.mostra_mensagem("Nenhum atendimento cadastrado.")
             return None
             
         escolha = self.atendimento_view.seleciona_atendimento(lista_atendimentos)
         if escolha:
-            for at in self.context.atendimentos:
+            for at in self.__pagamento_DAO.get_all():
                 string_formatada = f"{at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')} - Paciente: {at.paciente.nome}"
                 if string_formatada == escolha:
                     return at
@@ -46,7 +46,6 @@ class PagamentoController:
                 parcelado = True if vals['parcelado'] == 'Sim' else False
                 custo_total = at.custo
 
-                # Definindo a data do pagamento como hoje
                 hoje = date.today()
 
                 if tipo == 'Dinheiro':

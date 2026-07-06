@@ -1,9 +1,8 @@
 from datetime import date, datetime
 from models import Paciente
-from .validacoes import validar_obrigatorios, RegraNegocioException
-from views.paciente_view import PacienteView
-from DAOs.paciente_dao import PacienteDAO
-from DAOs.atendimento_dao import AtendimentoDAO
+from .validacoes import RegraNegocioException
+from views import PacienteView
+from DAOs import PacienteDAO, AtendimentoDAO
 
 class PacienteController:
     def __init__(self, context):
@@ -82,7 +81,6 @@ class PacienteController:
                 self.__paciente_view.mostra_mensagem(str(e))
 
     def cadastrar_paciente(self, nome, telefone, cpf, data_nascimento):
-        validar_obrigatorios({"Nome": nome, "CPF": cpf})
         if self._buscar_paciente_por_cpf(cpf):
             raise RegraNegocioException("CPF já cadastrado.")
         p = Paciente(nome, telefone, cpf, data_nascimento)
@@ -90,7 +88,6 @@ class PacienteController:
         return p
 
     def alterar_paciente(self, paciente, nome, telefone, cpf, data_nascimento):
-        validar_obrigatorios({"Nome": nome, "CPF": cpf})
         paciente.nome = nome
         paciente.telefone = telefone
         paciente.cpf = cpf

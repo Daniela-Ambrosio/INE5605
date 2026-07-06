@@ -1,11 +1,12 @@
-from views.relatorio_view import RelatorioView
-from views.clinica_view import ClinicaView
-from views.paciente_view import PacienteView
-from views.profissional_view import ProfissionalView
+from views import RelatorioView, ClinicaView, PacienteView, ProfissionalView
+from DAOs.atendimento_dao import AtendimentoDAO
+from DAOs import PacienteDAO, ProfissionalDAO
 
 class RelatoriosController:
-    def __init__(self, context):
-        self.context = context
+    def __init__(self):
+        self.__atendimento_DAO = AtendimentoDAO()
+        self.__paciente_DAO = PacienteDAO()
+        self.__profissional_DAO = ProfissionalDAO()
         self.relatorio_view = RelatorioView()
         self.clinica_view = ClinicaView()
         self.paciente_view = PacienteView()
@@ -30,7 +31,7 @@ class RelatoriosController:
         if not nome: return
         achou = False
         relatorio = f"-------- RELATÓRIO DE ATENDIMENTOS DA CLÍNICA {nome.upper()} --------\n\n"
-        for at in self.context.atendimentos:
+        for at in self.__atendimento_DAO.get_all():
             if at.clinica.nome == nome:
                 relatorio += self._formata_atendimento(at)
                 achou = True
@@ -43,7 +44,7 @@ class RelatoriosController:
         if not cpf: return
         achou = False
         relatorio = f"-------- RELATÓRIO DE ATENDIMENTOS DO PACIENTE {cpf} --------\n\n"
-        for at in self.context.atendimentos:
+        for at in self.__atendimento_DAO.get_all():
             if at.paciente.cpf == cpf:
                 relatorio += self._formata_atendimento(at)
                 achou = True
@@ -56,7 +57,7 @@ class RelatoriosController:
         if not cpf: return
         achou = False
         relatorio = f"-------- RELATÓRIO DE ATENDIMENTOS DO PROFISSIONAL {cpf} --------\n\n"
-        for at in self.context.atendimentos:
+        for at in self.__atendimento_DAO.get_all():
             if at.profissional.cpf == cpf:
                 relatorio += self._formata_atendimento(at)
                 achou = True

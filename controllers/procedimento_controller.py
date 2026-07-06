@@ -1,10 +1,11 @@
 from models import Procedimento, Atendimento, ProfissionalSaude
-from views.procedimento_view import ProcedimentoView
-from views.atendimento_view import AtendimentoView
+from views import ProcedimentoView, AtendimentoView
+from DAOs import ProcedimentoDAO, ProfissionalDAO
 
 class ProcedimentoController:
-    def __init__(self, context):
-        self.context = context
+    def __init__(self):
+        self.__procedimento_DAO = ProcedimentoDAO()
+        self.__profissional_DAO = ProfissionalDAO()
         self.__procedimento_view = ProcedimentoView()
         self.__atendimento_view = AtendimentoView()
 
@@ -18,21 +19,21 @@ class ProcedimentoController:
             elif opcao == 4: self._excluir_procedimento()
 
     def _buscar_atendimento(self, dt, ini):
-        for at in self.context.atendimentos:
+        for at in self.__procedimento_DAO.get_all():
             if at.data.strftime('%d/%m/%Y') == dt and at.inicio.strftime('%H:%M') == ini:
                 return at
         return None
 
     def _buscar_profissional(self, nome):
-        for p in self.context.profissionais:
+        for p in self.__profissional_DAO.get_all():
             if p.nome == nome: return p
         return None
 
     def _selecionar_atendimento_para_procedimento(self):
-        lista = [f"{a.data.strftime('%d/%m/%Y')} às {a.inicio.strftime('%H:%M')} - Paciente: {a.paciente.nome}" for a in self.context.atendimentos]
+        lista = [f"{a.data.strftime('%d/%m/%Y')} às {a.inicio.strftime('%H:%M')} - Paciente: {a.paciente.nome}" for a in self.__procedimento_DAO.get_all()]
         escolha = self.__atendimento_view.seleciona_atendimento(lista)
         if escolha: 
-            for at in self.context.atendimentos:
+            for at in self.__procedimento_DAO.get_all():
                 if f"{at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')} - Paciente: {at.paciente.nome}" == escolha:
                     return at
         return None
@@ -53,7 +54,7 @@ class ProcedimentoController:
         at = self._selecionar_atendimento_para_procedimento()
         if not at: return
         
-        nomes_profissionais = [p.nome for p in self.context.profissionais]
+        nomes_profissionais = [p.nome for p in self.__profissional_DAO.get_all()]
         vals = self.__procedimento_view.pega_dados_procedimento(nomes_profissionais)
         if vals:
             try:
@@ -82,7 +83,7 @@ class ProcedimentoController:
             self.__procedimento_view.mostra_mensagem("Não encontrado.")
             return
 
-        nomes_profissionais = [p.nome for p in self.context.profissionais]
+        nomes_profissionais = [p.nome for p in self.__profissional_DAO.get_all()]
         vals = self.__procedimento_view.pega_dados_procedimento(nomes_profissionais)
         if vals:
             try:
@@ -121,6 +122,8 @@ class ProcedimentoController:
         procedimento.custo = custo
         procedimento.profissional = profissional
         atendimento.custo += custo
+
+        self.__procedimento_DAO.update(procedimento)
 
     def excluir_procedimento(self, atendimento: Atendimento, procedimento: Procedimento):
         if procedimento in atendimento.procedimentos:

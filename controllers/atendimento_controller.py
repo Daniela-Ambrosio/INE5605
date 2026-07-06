@@ -2,10 +2,8 @@ from datetime import date, time, datetime
 from models import Clinica, Paciente, ProfissionalSaude, Atendimento, TipoAtendimento, Procedimento
 from .validacoes import RegraNegocioException
 from views.atendimento_view import AtendimentoView
-from DAOs.atendimento_dao import AtendimentoDAO
-from DAOs.clinica_dao import ClinicaDAO
-from DAOs.paciente_dao import PacienteDAO
-from DAOs.profissional_dao import ProfissionalDAO
+from DAOs import AtendimentoDAO, ProfissionalDAO, ClinicaDAO, PacienteDAO
+
 
 class AtendimentoController:
     def __init__(self, context):

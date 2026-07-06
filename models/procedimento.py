@@ -2,10 +2,18 @@ from .pessoa import ProfissionalSaude
 from .exceptions import TipoInvalidoException
 
 class Procedimento:
+    _proximo_codigo = 1
+
     def __init__(self, descricao: str, custo: float, profissional: ProfissionalSaude):
         self.descricao = descricao
         self.custo = custo
         self.profissional = profissional
+
+        if codigo is None:
+            self.codigo = Pagamento._proximo_codigo
+            Pagamento._proximo_codigo += 1
+        else:
+            self.codigo = codigo
 
     @property
     def descricao(self):
@@ -36,3 +44,11 @@ class Procedimento:
         if not isinstance(profissional, ProfissionalSaude):
             raise TipoInvalidoException("O profissional do procedimento deve ser da classe ProfissionalSaude.")
         self.__profissional = profissional
+
+
+    @property
+    def codigo(self): return self.__codigo
+    @codigo.setter
+    def codigo(self, codigo):
+        if not isinstance(codigo, int): raise TipoInvalidoException("Código deve ser do tipo int.")
+        self.__codigo = codigo
