@@ -4,14 +4,14 @@ from .exceptions import TipoInvalidoException
 class Procedimento:
     _proximo_codigo = 1
 
-    def __init__(self, descricao: str, custo: float, profissional: ProfissionalSaude):
+    def __init__(self, descricao: str, custo: float, profissional: ProfissionalSaude, codigo: int = None):
         self.descricao = descricao
         self.custo = custo
         self.profissional = profissional
 
         if codigo is None:
-            self.codigo = Pagamento._proximo_codigo
-            Pagamento._proximo_codigo += 1
+            self.codigo = Procedimento._proximo_codigo
+            Procedimento._proximo_codigo += 1
         else:
             self.codigo = codigo
 
