@@ -70,12 +70,12 @@ class ProfissionalView:
             string_todos = "Nenhum profissional cadastrado."
         sg.Popup("-------- LISTA DE PROFISSIONAIS ----------", string_todos)
 
-    def seleciona_profissional(self):
+    def seleciona_profissional(self, profissionais):
         sg.ChangeLookAndFeel("DarkTeal4")
         layout = [
             [sg.Text("-------- SELECIONAR PROFISSIONAL ----------", font=("Helvetica", 25))],
-            [sg.Text("Digite o CPF do profissional que deseja selecionar:", font=("Helvetica", 15))],
-            [sg.Text("CPF:", size=(15, 1)), sg.InputText("", key="cpf")],
+            [sg.Text("Selecione o CPF do profissional:", font=("Helvetica", 15))],
+            [sg.Text("CPF:", size=(15, 1)), sg.Combo(profissionais, readonly=True, key="cpf")],
             [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
         ]
         self.__window = sg.Window("Selecionar Profissional").Layout(layout)

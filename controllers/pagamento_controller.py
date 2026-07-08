@@ -2,11 +2,12 @@ from datetime import datetime, timedelta, date
 from models import PIX, Cartao, Dinheiro
 from .validacoes import RegraNegocioException
 from views import PagamentoView, AtendimentoView
-from DAOs import PagamentoDAO
+from DAOs import PagamentoDAO, AtendimentoDAO
 
 class PagamentoController:
     def __init__(self):
         self.__pagamento_DAO = PagamentoDAO()
+        self.__atendimento_DAO = AtendimentoDAO()
         self.pagamento_view = PagamentoView()
         self.atendimento_view = AtendimentoView()
 
@@ -19,14 +20,14 @@ class PagamentoController:
             elif opcao == 3: self.listar_extrato()
             
     def selecionar_atendimento(self):
-        lista_atendimentos = [f"{at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')} - Paciente: {at.paciente.nome}" for at in self.__pagamento_DAO.get_all()]
+        lista_atendimentos = [f"{at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')} - Paciente: {at.paciente.nome}" for at in self.__atendimento_DAO.get_all()]
         if not lista_atendimentos:
             self.pagamento_view.mostra_mensagem("Nenhum atendimento cadastrado.")
             return None
             
         escolha = self.atendimento_view.seleciona_atendimento(lista_atendimentos)
         if escolha:
-            for at in self.__pagamento_DAO.get_all():
+            for at in self.__atendimento_DAO.get_all():
                 string_formatada = f"{at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')} - Paciente: {at.paciente.nome}"
                 if string_formatada == escolha:
                     return at
@@ -39,7 +40,7 @@ class PagamentoController:
             self.pagamento_view.mostra_mensagem("Este atendimento já possui pagamento registrado.")
             return
 
-        vals = self.pagamento_view.pega_dados_pagamento()
+        vals = self.pagamento_view.pega_dados_pagamento(at.custo)
         if vals:
             try:
                 tipo = vals['tipo']
@@ -70,6 +71,8 @@ class PagamentoController:
                         pag.adicionar_parcela(i+1, valor_parcela, vencimento)
 
                 at.pagamento = pag
+                self.__pagamento_DAO.add(pag)
+                self.__atendimento_DAO.update(at)
                 self.pagamento_view.mostra_mensagem("Pagamento realizado com sucesso!")
             except Exception as e:
                 self.pagamento_view.mostra_mensagem(f"Erro: {e}")
@@ -91,6 +94,7 @@ class PagamentoController:
                             self.pagamento_view.mostra_mensagem("Esta parcela já está paga.")
                             return
                         p.paga = True
+                        self.__atendimento_DAO.update(at)
                         self.pagamento_view.mostra_mensagem(f"Parcela {num} paga com sucesso!")
                         return
                 self.pagamento_view.mostra_mensagem("Parcela não encontrada.")

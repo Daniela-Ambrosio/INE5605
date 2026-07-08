@@ -53,7 +53,8 @@ class ProfissionalController:
 
     def tela_alterar_profissional(self):
         self.listar_profissionais()
-        cpf = self.__profissional_view.seleciona_profissional()
+        cpfs = [p.cpf for p in self.__profissional_DAO.get_all()]
+        cpf = self.__profissional_view.seleciona_profissional(cpfs)
         if cpf:
             profissional = self.buscar_profissional_por_cpf(cpf)
             if not profesional:
@@ -75,7 +76,8 @@ class ProfissionalController:
 
     def tela_excluir_profissional(self):
         self.listar_profissionais()
-        cpf = self.__profissional_view.seleciona_profissional()
+        cpfs = [p.cpf for p in self.__profissional_DAO.get_all()]
+        cpf = self.__profissional_view.seleciona_profissional(cpfs)
         if cpf:
             profissional = self.buscar_profissional_por_cpf(cpf)
             if not profissional:
@@ -107,4 +109,4 @@ class ProfissionalController:
         if any(at.profissional.cpf == profissional.cpf for at in self.__atendimento_DAO.get_all()):
             raise RegraNegocioException("Profissional possui atendimentos agendados.")
 
-        if profissional in self.__profissional_DAO.get_all(): self.__profissional_DAO.remove(profissional.cpf)
+        if any(p.cpf == profissional.cpf for p in self.__profissional_DAO.get_all()): self.__profissional_DAO.remove(profissional.cpf)

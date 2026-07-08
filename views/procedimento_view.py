@@ -31,12 +31,12 @@ class ProcedimentoView:
         ]
         self.__window = sg.Window("Sistema de Clínica Médica").Layout(layout)
 
-    def pega_dados_procedimento(self):
+    def pega_dados_procedimento(self, profissionais):
         sg.ChangeLookAndFeel("DarkTeal4")
         layout = [
             [sg.Text("-------- DADOS PROCEDIMENTO ----------", font=("Helvetica", 25))],
             [sg.Text("Descrição:", size=(20, 1)), sg.InputText("", key="descricao")],
-            [sg.Text("Nome do Profissional:", size=(20, 1)), sg.InputText("", key="profissional")],
+            [sg.Text("Nome do Profissional:", size=(20, 1)), sg.Combo(profissionais, readonly=True, key="profissional")],
             [sg.Text("Custo:", size=(20, 1)), sg.InputText("", key="custo")],
             [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
         ]

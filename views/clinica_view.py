@@ -69,12 +69,12 @@ class ClinicaView:
             string_todos = "Nenhuma clínica cadastrada."
         sg.Popup("-------- LISTA DE CLÍNICAS ----------", string_todos)
 
-    def seleciona_clinica(self):
+    def seleciona_clinica(self, clinicas):
         sg.ChangeLookAndFeel("DarkTeal4")
         layout = [
             [sg.Text("-------- SELECIONAR CLÍNICA ----------", font=("Helvetica", 25))],
-            [sg.Text("Digite o Nome da clínica que deseja selecionar:", font=("Helvetica", 15))],
-            [sg.Text("Nome:", size=(15, 1)), sg.InputText("", key="nome")],
+            [sg.Text("Selecione a clínica:", font=("Helvetica", 15))],
+            [sg.Text("Nome:", size=(15, 1)), sg.Combo(clinicas, readonly=True, key="nome")],
             [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
         ]
         self.__window = sg.Window("Selecionar Clínica").Layout(layout)

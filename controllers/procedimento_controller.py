@@ -1,11 +1,12 @@
 from models import Procedimento, Atendimento, ProfissionalSaude
 from views import ProcedimentoView, AtendimentoView
-from DAOs import ProcedimentoDAO, ProfissionalDAO
+from DAOs import ProcedimentoDAO, ProfissionalDAO, AtendimentoDAO
 
 class ProcedimentoController:
     def __init__(self):
         self.__procedimento_DAO = ProcedimentoDAO()
         self.__profissional_DAO = ProfissionalDAO()
+        self.__atendimento_DAO = AtendimentoDAO()
         self.__procedimento_view = ProcedimentoView()
         self.__atendimento_view = AtendimentoView()
 
@@ -19,7 +20,7 @@ class ProcedimentoController:
             elif opcao == 4: self.tela_excluir_procedimento()
 
     def buscar_atendimento(self, dt, ini):
-        for at in self.__procedimento_DAO.get_all():
+        for at in self.__atendimento_DAO.get_all():
             if at.data.strftime('%d/%m/%Y') == dt and at.inicio.strftime('%H:%M') == ini:
                 return at
         return None
@@ -30,10 +31,10 @@ class ProcedimentoController:
         return None
 
     def selecionar_atendimento_para_procedimento(self):
-        lista = [f"{a.data.strftime('%d/%m/%Y')} às {a.inicio.strftime('%H:%M')} - Paciente: {a.paciente.nome}" for a in self.__procedimento_DAO.get_all()]
+        lista = [f"{a.data.strftime('%d/%m/%Y')} às {a.inicio.strftime('%H:%M')} - Paciente: {a.paciente.nome}" for a in self.__atendimento_DAO.get_all()]
         escolha = self.__atendimento_view.seleciona_atendimento(lista)
         if escolha: 
-            for at in self.__procedimento_DAO.get_all():
+            for at in self.__atendimento_DAO.get_all():
                 if f"{at.data.strftime('%d/%m/%Y')} às {at.inicio.strftime('%H:%M')} - Paciente: {at.paciente.nome}" == escolha:
                     return at
         return None
@@ -114,6 +115,10 @@ class ProcedimentoController:
     def adicionar_procedimento_a_atendimento(self, atendimento: Atendimento, descricao: str, custo: float, profissional: ProfissionalSaude) -> Procedimento:
         procedimento = Procedimento(descricao, custo, profissional)
         atendimento.adicionar_procedimento(procedimento)
+
+        self.__procedimento_DAO.add(procedimento) 
+        self.__atendimento_DAO.update(atendimento) 
+
         return procedimento
 
     def alterar_procedimento(self, atendimento: Atendimento, procedimento: Procedimento, descricao: str, custo: float, profissional: ProfissionalSaude):
@@ -124,8 +129,12 @@ class ProcedimentoController:
         atendimento.custo += custo
 
         self.__procedimento_DAO.update(procedimento)
+        self.__atendimento_DAO.update(atendimento)
 
     def excluir_procedimento(self, atendimento: Atendimento, procedimento: Procedimento):
         if procedimento in atendimento.procedimentos:
             atendimento.custo -= procedimento.custo
             atendimento.procedimentos.remove(procedimento)
+            
+            self.__atendimento_DAO.update(atendimento)
+            self.__procedimento_DAO.remove(procedimento.codigo)

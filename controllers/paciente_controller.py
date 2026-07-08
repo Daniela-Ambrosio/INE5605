@@ -48,7 +48,8 @@ class PacienteController:
 
     def tela_alterar_paciente(self):
         self.listar_pacientes()
-        cpf = self.__paciente_view.seleciona_paciente()
+        cpfs = [p.cpf for p in self.__paciente_DAO.get_all()]
+        cpf = self.__paciente_view.seleciona_paciente(cpfs)
         if cpf:
             paciente = self.buscar_paciente_por_cpf(cpf)
             if not paciente:
@@ -68,7 +69,8 @@ class PacienteController:
 
     def tela_excluir_paciente(self):
         self.listar_pacientes()
-        cpf = self.__paciente_view.seleciona_paciente()
+        cpfs = [p.cpf for p in self.__paciente_DAO.get_all()]
+        cpf = self.__paciente_view.seleciona_paciente(cpfs)
         if cpf:
             paciente = self.buscar_paciente_por_cpf(cpf)
             if not paciente:
@@ -99,6 +101,6 @@ class PacienteController:
         if any(at.paciente.cpf == paciente.cpf for at in self.__atendimento_DAO.get_all()):
             raise RegraNegocioException("Paciente possui atendimentos e não pode ser excluído.")
 
-        if paciente in self.__paciente_DAO.get_all(): self.__paciente_DAO.remove(paciente.cpf)
+        if any(p.cpf == paciente.cpf for p in self.__paciente_DAO.get_all()): self.__paciente_DAO.remove(paciente.cpf)
 
     

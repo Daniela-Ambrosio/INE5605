@@ -66,12 +66,12 @@ class PacienteView:
             string_todos = "Nenhum paciente cadastrado."
         sg.Popup("-------- LISTA DE PACIENTES ----------", string_todos)
 
-    def seleciona_paciente(self):
+    def seleciona_paciente(self, pacientes):
         sg.ChangeLookAndFeel("DarkTeal4")
         layout = [
             [sg.Text("-------- SELECIONAR PACIENTE ----------", font=("Helvetica", 25))],
-            [sg.Text("Digite o CPF do paciente que deseja selecionar:", font=("Helvetica", 15))],
-            [sg.Text("CPF:", size=(15, 1)), sg.InputText("", key="cpf")],
+            [sg.Text("Selecione o CPF do paciente:", font=("Helvetica", 15))],
+            [sg.Text("CPF:", size=(15, 1)), sg.Combo(pacientes, readonly=True, key="cpf")],
             [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
         ]
         self.__window = sg.Window("Selecionar Paciente").Layout(layout)

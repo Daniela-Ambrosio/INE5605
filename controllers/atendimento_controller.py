@@ -191,4 +191,4 @@ class AtendimentoController:
         self.__atendimento_DAO.update(atendimento)
 
     def excluir_atendimento(self, atendimento: Atendimento):
-        if atendimento in self.__atendimento_DAO.get_all(): self.__atendimento_DAO.remove(atendimento.codigo)
+        if any(at.codigo == atendimento.codigo for at in self.__atendimento_DAO.get_all()): self.__atendimento_DAO.remove(atendimento.codigo)

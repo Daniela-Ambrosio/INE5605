@@ -60,7 +60,8 @@ class ClinicaController:
 
     def tela_alterar_clinica(self):
         self.listar_clinicas()
-        nome = self.__clinica_view.seleciona_clinica()
+        nomes_clinicas = [c.nome for c in self.__clinica_DAO.get_all()]
+        nome = self.__clinica_view.seleciona_clinica(nomes_clinicas)
         if nome:
             clinica = self.buscar_clinica_por_nome(nome)
             if not clinica:
@@ -85,7 +86,8 @@ class ClinicaController:
 
     def tela_excluir_clinica(self):
         self.listar_clinicas()
-        nome = self.__clinica_view.seleciona_clinica()
+        nomes_clinicas = [c.nome for c in self.__clinica_DAO.get_all()]
+        nome = self.__clinica_view.seleciona_clinica(nomes_clinicas)
         if nome:
             clinica = self.buscar_clinica_por_nome(nome)
             if not clinica:
@@ -118,4 +120,4 @@ class ClinicaController:
         if any(at.clinica.nome == clinica.nome for at in self.__atendimento_DAO.get_all()):
             raise RegraNegocioException("Não é possível excluir esta clínica pois ela possui atendimentos agendados.")
             
-        if clinica in self.__clinica_DAO.get_all(): self.__clinica_DAO.remove(clinica.nome)
+        if any(c.nome == clinica.nome for c in self.__clinica_DAO.get_all()): self.__clinica_DAO.remove(clinica.nome)

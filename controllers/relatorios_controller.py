@@ -1,12 +1,13 @@
 from views import RelatorioView, ClinicaView, PacienteView, ProfissionalView
 from DAOs.atendimento_dao import AtendimentoDAO
-from DAOs import PacienteDAO, ProfissionalDAO
+from DAOs import PacienteDAO, ProfissionalDAO, ClinicaDAO
 
 class RelatoriosController:
     def __init__(self):
         self.__atendimento_DAO = AtendimentoDAO()
         self.__paciente_DAO = PacienteDAO()
         self.__profissional_DAO = ProfissionalDAO()
+        self.__clinica_DAO = ClinicaDAO()
         self.relatorio_view = RelatorioView()
         self.clinica_view = ClinicaView()
         self.paciente_view = PacienteView()
@@ -27,7 +28,8 @@ class RelatoriosController:
                 f"TIPO: {at.tipo.value} CUSTO: R$ {at.custo:.2f} STATUS: {pago}\n\n")
 
     def relatorio_clinica(self):
-        nome = self.clinica_view.seleciona_clinica()
+        nomes_clinicas = [c.nome for c in self.__clinica_DAO.get_all()]
+        nome = self.clinica_view.seleciona_clinica(nomes_clinicas)
         if not nome: return
         achou = False
         relatorio = f"-------- RELATÓRIO DE ATENDIMENTOS DA CLÍNICA {nome.upper()} --------\n\n"
@@ -40,7 +42,8 @@ class RelatoriosController:
         self.relatorio_view.mostra_mensagem(relatorio)
 
     def relatorio_paciente(self):
-        cpf = self.paciente_view.seleciona_paciente()
+        cpfs = [p.cpf for p in self.__paciente_DAO.get_all()]
+        cpf = self.paciente_view.seleciona_paciente(cpfs)
         if not cpf: return
         achou = False
         relatorio = f"-------- RELATÓRIO DE ATENDIMENTOS DO PACIENTE {cpf} --------\n\n"
@@ -53,7 +56,8 @@ class RelatoriosController:
         self.relatorio_view.mostra_mensagem(relatorio)
 
     def relatorio_profissional(self):
-        cpf = self.profissional_view.seleciona_profissional()
+        cpfs = [p.cpf for p in self.__profissional_DAO.get_all()]
+        cpf = self.profissional_view.seleciona_profissional(cpfs)
         if not cpf: return
         achou = False
         relatorio = f"-------- RELATÓRIO DE ATENDIMENTOS DO PROFISSIONAL {cpf} --------\n\n"

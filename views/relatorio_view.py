@@ -8,23 +8,33 @@ class RelatorioView:
         self.init_opcoes()
         button, values = self.open()
         opcao = 0
-        if values:
-            if values.get("1"): opcao = 1
-            if values.get("2"): opcao = 2
-            if values.get("3"): opcao = 3
-            if values.get("0") or button in (None, "Cancelar"): opcao = 0
+        if values and button == "Confirmar":
+            escolha = values.get("opcao")
+            if escolha == "Listar Atendimentos da Clínica":
+                opcao = 1
+            elif escolha == "Listar Atendimentos do Paciente":
+                opcao = 2
+            elif escolha == "Listar Atendimentos do Profissional":
+                opcao = 3
+            elif escolha == "Retornar":
+                opcao = 0
+        elif button in (None, "Cancelar"):
+            opcao = 0
         self.close()
         return opcao
 
     def init_opcoes(self):
         sg.ChangeLookAndFeel("DarkTeal4")
+        opcoes = [
+            "Listar Atendimentos da Clínica",
+            "Listar Atendimentos do Paciente",
+            "Listar Atendimentos do Profissional",
+            "Retornar"
+        ]
         layout = [
             [sg.Text("-------- RELATÓRIOS ----------", font=("Helvetica", 25))],
             [sg.Text("Escolha sua opção", font=("Helvetica", 15))],
-            [sg.Radio("Listar Atendimentos da Clínica", "RD1", key="1")],
-            [sg.Radio("Listar Atendimentos do Paciente", "RD1", key="2")],
-            [sg.Radio("Listar Atendimentos do Profissional", "RD1", key="3")],
-            [sg.Radio("Retornar", "RD1", key="0")],
+            [sg.Combo(opcoes, default_value="Listar Atendimentos da Clínica", readonly=True, key="opcao", size=(35, 1))],
             [sg.Button("Confirmar"), sg.Cancel("Cancelar")]
         ]
         self.__window = sg.Window("Sistema de Clínica Médica").Layout(layout)
