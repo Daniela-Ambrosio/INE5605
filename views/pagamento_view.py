@@ -32,7 +32,6 @@ class PagamentoView:
     def pega_dados_pagamento(self, valor_total):
         sg.ChangeLookAndFeel("DarkTeal4")
         
-        # Passo 1: Selecionar se é parcelado e o Tipo
         layout_inicial = [
             [sg.Text("-------- REALIZAR PAGAMENTO ----------", font=("Helvetica", 22))],
             [sg.Text(f"Valor do Atendimento: R$ {valor_total:.2f}", font=("Helvetica", 14), text_color="lightgreen")],
@@ -70,7 +69,6 @@ class PagamentoView:
                 self.close()
                 break
                 
-        # Passo 2: Exibir a tela específica do tipo de pagamento escolhido
         dados = {
             "tipo": tipo_escolhido,
             "parcelado": parcelado_escolhido,
