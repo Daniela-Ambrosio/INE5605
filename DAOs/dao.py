@@ -22,7 +22,7 @@ class DAO(ABC):
 
     def add(self, key, obj):
         try:
-            self.__load() # Recarrega os dados do disco antes de alterar
+            self.__load()
         except FileNotFoundError:
             pass
         self.__cache[key] = obj
@@ -30,7 +30,7 @@ class DAO(ABC):
         
     def update(self, key, obj):
         try:
-            self.__load() # Recarrega antes de alterar
+            self.__load() 
         except FileNotFoundError:
             pass
         try:
@@ -41,7 +41,7 @@ class DAO(ABC):
             raise("Chave inválida")
     def get(self, key):
         try:
-            self.__load() # Recarrega antes de ler
+            self.__load()
         except FileNotFoundError:
             pass
         try:
@@ -50,7 +50,7 @@ class DAO(ABC):
             raise("Chave inválida")
     def remove(self, key):
         try:
-            self.__load() # Recarrega antes de remover
+            self.__load() 
         except FileNotFoundError:
             pass
         try:
@@ -61,7 +61,7 @@ class DAO(ABC):
             
     def get_all(self):
         try:
-            self.__load() # Recarrega antes de listar
+            self.__load()
         except FileNotFoundError:
             pass
         return self.__cache.values()
